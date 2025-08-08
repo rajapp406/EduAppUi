@@ -21,9 +21,20 @@ const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) 
     // Check authentication status when the app loads
     const initAuth = async () => {
       try {
-        await dispatch(checkAuth()).unwrap();
-      } catch (error) {
-        console.error('Authentication check failed:', error);
+        // Use type assertion for the dispatch function
+        const result = await dispatch(checkAuth() as any);
+        
+        // Check if the action was rejected
+        if (result && 'error' in result) {
+          const error = result.error as Error;
+          throw new Error(error.message || 'Authentication check failed');
+        }
+        
+        return result?.payload;
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+        console.error('Authentication check failed:', errorMessage);
+        return null;
       }
     };
 
@@ -41,11 +52,6 @@ const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
   return <>{children}</>;
 };
-
-// Define types for Vite environment variables
-interface ImportMetaEnv {
-  VITE_GOOGLE_CLIENT_ID: string;
-}
 
 const AppContent: React.FC = () => {
   return (
@@ -69,7 +75,7 @@ const AppContent: React.FC = () => {
               
               {/* Protected routes */}
               <Route element={<ProtectedRoute />}>
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/" element={<>Welcome</>} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/quiz" element={<QuizList onStartQuiz={()=>{}}/>} />
                 <Route path="/lessons" element={<div>Lessons Page</div>} />
@@ -86,21 +92,22 @@ const AppContent: React.FC = () => {
 };
 
 const App: React.FC = () => {
-  // Get Google Client ID from Vite environment variables
- const YOUR_GOOGLE_CLIENT_ID = "135905102569-1raritt3b47q7hdkinrr9q5p84mev4ll.apps.googleusercontent.com"
-  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || YOUR_GOOGLE_CLIENT_ID;
-  console.log(googleClientId);
+  const YOUR_GOOGLE_CLIENT_ID = "135905102569-1raritt3b47q7hdkinrr9q5p84mev4ll.apps.googleusercontent.com";
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || YOUR_GOOGLE_CLIENT_ID;
+  
   if (!googleClientId) {
-    console.error('VITE_GOOGLE_CLIENT_ID is not properly configured');
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
         <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full text-center">
           <h1 className="text-2xl font-bold text-red-600 mb-4">Configuration Error</h1>
           <p className="text-gray-700 mb-4">Google OAuth client ID is not properly configured.</p>
-          <p className="text-sm text-gray-500">Please set VITE_GOOGLE_CLIENT_ID in your environment variables.</p>
+          <p className="text-sm text-gray-500">
+            Please set NEXT_PUBLIC_GOOGLE_CLIENT_ID in your environment variables.
+          </p>
         </div>
       </div>
-    );  }
+    );
+  }
 
   return (
     <Provider store={store}>

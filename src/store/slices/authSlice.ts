@@ -1,6 +1,26 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { storage } from '../../utils/storage';
 
+type ProviderType = 'email' | 'google' | 'facebook' | 'github';
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+  provider?: ProviderType;
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface AuthState {
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  user: User | null;
+}
+
+// Type definitions for auth state and user
+
 // Load initial state from localStorage if available
 const loadInitialState = () => {
   const authData = storage.getAuthData();
@@ -21,24 +41,6 @@ const loadInitialState = () => {
     user: null,
   };
 };
-
-type ProviderType = 'email' | 'google' | 'facebook' | 'github';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatar?: string;
-  provider?: ProviderType;
-  accessToken: string;
-  refreshToken: string;
-}
-
-interface AuthState {
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  user: User | null;
-}
 
 const initialState: AuthState = loadInitialState();
 

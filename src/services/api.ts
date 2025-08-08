@@ -2,7 +2,8 @@ import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } f
 import { store } from '../store/store';
 import { logout } from '../store/slices/authSlice';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3900';
+// Use NEXT_PUBLIC_ prefix for client-side environment variables in Next.js
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3100';
 
 class ApiService {
   private instance: AxiosInstance;

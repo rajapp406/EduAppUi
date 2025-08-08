@@ -1,110 +1,149 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import type { RootState } from '../store';
+import { QuizState } from '@/models/quiz';
+import { Quiz, QuizType } from '@/models/api';
+import { quizService } from '@/services/quizService';
 
-interface Question {
-  id: string;
-  type: 'multiple-choice' | 'true-false' | 'short-answer';
-  question: string;
-  options?: string[];
-  correctAnswer: string | number;
-  explanation?: string;
-  difficulty: 'easy' | 'medium' | 'hard';
-  subject: string;
-}
-
-interface Quiz {
-  id: string;
-  title: string;
-  description: string;
-  questions: Question[];
-  timeLimit: number;
-  creditCost: number;
-  difficulty: 'easy' | 'medium' | 'hard';
-  subject: string;
-}
-
-interface QuizState {
-  availableQuizzes: Quiz[];
-  currentQuiz: Quiz | null;
-  currentQuestionIndex: number;
-  userAnswers: (string | number | null)[];
-  isActive: boolean;
-  timeRemaining: number;
-  completedQuizzes: {
-    quizId: string;
-    score: number;
-    completedAt: string;
-  }[];
-}
-
-const sampleQuizzes: Quiz[] = [
-  {
-    id: '1',
-    title: 'Basic Mathematics',
-    description: 'Test your fundamental math skills',
-    creditCost: 5,
-    difficulty: 'easy',
-    subject: 'Mathematics',
-    timeLimit: 600,
-    questions: [
-      {
-        id: '1',
-        type: 'multiple-choice',
-        question: 'What is 15 + 27?',
-        options: ['40', '42', '44', '46'],
-        correctAnswer: 1,
-        difficulty: 'easy',
-        subject: 'Mathematics',
-        explanation: '15 + 27 = 42'
-      },
-      {
-        id: '2',
-        type: 'multiple-choice',
-        question: 'What is 8 × 9?',
-        options: ['70', '71', '72', '73'],
-        correctAnswer: 2,
-        difficulty: 'easy',
-        subject: 'Mathematics',
-        explanation: '8 × 9 = 72'
-      }
-    ]
-  },
-  {
-    id: '2',
-    title: 'Physics Fundamentals',
-    description: 'Basic physics concepts and formulas',
-    creditCost: 8,
-    difficulty: 'medium',
-    subject: 'Physics',
-    timeLimit: 900,
-    questions: [
-      {
-        id: '3',
-        type: 'multiple-choice',
-        question: 'What is the unit of force?',
-        options: ['Joule', 'Newton', 'Watt', 'Pascal'],
-        correctAnswer: 1,
-        difficulty: 'medium',
-        subject: 'Physics',
-        explanation: 'Newton is the SI unit of force'
-      }
-    ]
+// Async thunk to fetch quiz by ID
+export const fetchQuiz = createAsyncThunk(
+  'quiz/fetchQuiz',
+  async (quizId: string, { rejectWithValue }) => {
+    try {
+      const quiz = await quizService.getQuizById(quizId);
+      return quiz;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch quiz');
+    }
   }
-];
+);
+
+// Async thunk to load all quizzes
+export const loadQuizzesAsync = createAsyncThunk(
+  'quiz/loadQuizzes',
+  async (params: { page?: number; limit?: number } = {}, { rejectWithValue }) => {
+    try {
+      console.log('loadQuizzesAsync: Fetching all quizzes...', params);
+      const response = await quizService.getQuizzes({
+        page: params.page || 1,
+        limit: params.limit || 10
+      });
+      console.log('loadQuizzesAsync: Successfully fetched quizzes:', response);
+      return {
+        items: response.data || [],
+        meta: response.meta || { page: 1, limit: 10, total: 0, totalPages: 0 }
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch quizzes';
+      console.error('loadQuizzesAsync error:', errorMessage, error);
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Async thunk to load quizzes by subject
+export const loadQuizzesBySubject = createAsyncThunk(
+  'quiz/loadQuizzesBySubject',
+  async (params: { subjectId: string; page?: number; limit?: number }, { rejectWithValue }) => {
+    try {
+      console.log('loadQuizzesBySubject: Fetching quizzes for subject:', params);
+      const response = await quizService.getQuizzesBySubject(
+        params.subjectId,
+        params.page || 1,
+        params.limit || 10
+      );
+      console.log('loadQuizzesBySubject: Successfully fetched quizzes:', {
+        response,
+        hasData: !!response,
+        meta: response?.meta,
+        subjectId: params.subjectId
+      });
+      
+      if (!response || !Array.isArray(response)) {
+        console.error('Invalid response data format:', response);
+        return {
+          items: [],
+          meta: response?.meta || { page: 1, limit: 10, total: 0, totalPages: 0 },
+          subjectId: params.subjectId
+        };
+      }
+      
+      return {
+        items: response,
+        meta: response.meta || { page: 1, limit: 10, total: 0, totalPages: 0 },
+        subjectId: params.subjectId
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch quizzes by subject';
+      console.error('loadQuizzesBySubject error:', errorMessage, error);
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Async thunk to load quizzes by chapter
+export const loadQuizzesByChapter = createAsyncThunk(
+  'quiz/loadQuizzesByChapter',
+  async (params: { chapterId: string; page?: number; limit?: number }, { rejectWithValue }) => {
+    try {
+      console.log('loadQuizzesByChapter: Fetching quizzes for chapter:', params);
+      const response = await quizService.getQuizzesByChapter(
+        params.chapterId,
+        params.page || 1,
+        params.limit || 10
+      );
+      console.log('loadQuizzesByChapter: Successfully fetched quizzes:', response);
+      return {
+        items: response.data || [],
+        meta: response.meta || { page: 1, limit: 10, total: 0, totalPages: 0 },
+        chapterId: params.chapterId
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch quizzes by chapter';
+      console.error('loadQuizzesByChapter error:', errorMessage, error);
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
 
 const initialState: QuizState = {
-  availableQuizzes: sampleQuizzes,
+  availableQuizzes: [],
   currentQuiz: null,
   currentQuestionIndex: 0,
   userAnswers: [],
   isActive: false,
+  isLoading: false,
+  isLoadingQuizzes: false,
+  error: null,
   timeRemaining: 0,
   completedQuizzes: [],
+  quizzesBySubject: {},
+  quizzesByChapter: {},
+  pagination: {
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+    hasMore: false
+  }
 };
 
 const quizSlice = createSlice({
   name: 'quiz',
   initialState,
   reducers: {
+    resetQuizState: (state) => {
+      state.currentQuiz = null;
+      state.currentQuestionIndex = 0;
+      state.userAnswers = [];
+      state.isActive = false;
+      state.isLoading = false;
+      state.error = null;
+      state.timeRemaining = 0;
+    },
+    loadQuizzes: (state, action: PayloadAction<Quiz[]>) => {
+      console.log("loadQuizzes", action, state);
+        state.availableQuizzes = action.payload;
+    },
     startQuiz: (state, action: PayloadAction<string>) => {
       const quiz = state.availableQuizzes.find(q => q.id === action.payload);
       if (quiz) {
@@ -116,6 +155,7 @@ const quizSlice = createSlice({
       }
     },
     answerQuestion: (state, action: PayloadAction<{ questionIndex: number; answer: string | number }>) => {
+    console.log(state, action, state.userAnswers)
       state.userAnswers[action.payload.questionIndex] = action.payload.answer;
     },
     nextQuestion: (state) => {
@@ -131,20 +171,21 @@ const quizSlice = createSlice({
     submitQuiz: (state) => {
       if (state.currentQuiz) {
         const correctAnswers = state.userAnswers.filter((answer, index) => 
-          answer === state.currentQuiz!.questions[index].correctAnswer
+          answer === state.currentQuiz!.questions[index].options.find((option) => option.isCorrect)?.text
         ).length;
-        const score = Math.round((correctAnswers / state.currentQuiz.questions.length) * 100);
+        const totalQuestions = state.currentQuiz.questions.length;
+        const score = Math.round((correctAnswers / totalQuestions) * 100);
         
         state.completedQuizzes.push({
           quizId: state.currentQuiz.id,
           score,
           completedAt: new Date().toISOString(),
+          totalQuestions,
+          correctAnswers,
         });
         
-        state.currentQuiz = null;
+        // Keep currentQuiz and userAnswers for the results page
         state.isActive = false;
-        state.currentQuestionIndex = 0;
-        state.userAnswers = [];
         state.timeRemaining = 0;
       }
     },
@@ -157,7 +198,105 @@ const quizSlice = createSlice({
       }
     },
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchQuiz.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchQuiz.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.currentQuiz = action.payload;
+      })
+      .addCase(fetchQuiz.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
+
+    builder
+      .addCase(loadQuizzesAsync.pending, (state) => {
+        state.isLoadingQuizzes = true;
+        state.error = null;
+      })
+      .addCase(loadQuizzesAsync.fulfilled, (state, action) => {
+        state.isLoadingQuizzes = false;
+        console.log("loadQuizzesAsync", action, state);
+        state.availableQuizzes = action.payload.items;
+        console.log("availableQuizzes", state.availableQuizzes);
+        if (action.payload.meta) {
+          state.pagination = {
+            page: action.payload.meta.page,
+            limit: action.payload.meta.limit,
+            total: action.payload.meta.total,
+            totalPages: action.payload.meta.totalPages,
+            hasMore: action.payload.meta.page < action.payload.meta.totalPages
+          };
+        }
+      })
+      .addCase(loadQuizzesAsync.rejected, (state, action) => {
+        state.isLoadingQuizzes = false;
+        state.error = action.payload as string;
+      })
+      
+      .addCase(loadQuizzesBySubject.pending, (state) => {
+        state.isLoadingQuizzes = true;
+        state.error = null;
+      })
+      .addCase(loadQuizzesBySubject.fulfilled, (state, action) => {
+        state.isLoadingQuizzes = false;
+        console.log("loadQuizzesBySubject fullfilled", action, state);
+        if (action.payload.subjectId) {
+          state.quizzesBySubject[action.payload.subjectId] = action.payload.items;
+          if (action.payload.meta) {
+            state.pagination = {
+              page: action.payload.meta.page,
+              limit: action.payload.meta.limit,
+              total: action.payload.meta.total,
+              totalPages: action.payload.meta.totalPages,
+              hasMore: action.payload.meta.page < action.payload.meta.totalPages
+            };
+          }
+        }
+      })
+      .addCase(loadQuizzesBySubject.rejected, (state, action) => {
+        state.isLoadingQuizzes = false;
+        state.error = action.payload as string;
+      })
+      
+      .addCase(loadQuizzesByChapter.pending, (state) => {
+        state.isLoadingQuizzes = true;
+        state.error = null;
+      })
+      .addCase(loadQuizzesByChapter.fulfilled, (state, action) => {
+        state.isLoadingQuizzes = false;
+        if (action.payload.chapterId) {
+          state.quizzesByChapter[action.payload.chapterId] = action.payload.items;
+          if (action.payload.meta) {
+            state.pagination = {
+              page: action.payload.meta.page,
+              limit: action.payload.meta.limit,
+              total: action.payload.meta.total,
+              totalPages: action.payload.meta.totalPages,
+              hasMore: action.payload.meta.page < action.payload.meta.totalPages
+            };
+          }
+        }
+      })
+      .addCase(loadQuizzesByChapter.rejected, (state, action) => {
+        state.isLoadingQuizzes = false;
+        state.error = action.payload as string;
+      });
+  },
 });
 
-export const { startQuiz, answerQuestion, nextQuestion, previousQuestion, submitQuiz, updateTimer } = quizSlice.actions;
+export const { 
+  startQuiz, 
+  answerQuestion, 
+  nextQuestion, 
+  previousQuestion, 
+  submitQuiz, 
+  updateTimer,
+  resetQuizState,
+  loadQuizzes,
+} = quizSlice.actions;
 export default quizSlice.reducer;

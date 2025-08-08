@@ -1,38 +1,127 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store/store';
-import { startQuiz } from '../../store/slices/quizSlice';
-import { spendCredits } from '../../store/slices/creditSlice';
-import { Brain, Clock, Star } from 'lucide-react';
+import { 
+  loadQuizzesAsync, 
+  loadQuizzesBySubject, 
+  loadQuizzesByChapter, 
+  startQuiz 
+} from '../../store/slices/quizSlice';
+import { BookOpen, Clock, Bookmark, Loader2 } from 'lucide-react';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import Badge from '../ui/Badge';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Quiz } from '@/models/api';
 
 interface QuizListProps {
-  onStartQuiz: () => void;
+  onStartQuiz?: () => void;
+  subjectId?: string;
+  chapterId?: string;
+  title?: string;
+  description?: string;
 }
 
-const QuizList: React.FC<QuizListProps> = ({ onStartQuiz }) => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { availableQuizzes } = useSelector((state: RootState) => state.quiz);
-  const { totalCredits, usedCredits } = useSelector((state: RootState) => state.credits);
+const QuizList: React.FC<QuizListProps> = ({ 
+  onStartQuiz = () => {}, 
+  subjectId, 
+  chapterId,
+  title = 'Available Quizzes',
+  description = 'Test your knowledge and earn certificates'
+}) => {
+  const dispatch: any = useDispatch();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  // Get quizzes based on props or URL params
+  const effectiveSubjectId = subjectId || searchParams?.get('subjectId') || '';
+  const effectiveChapterId = chapterId || searchParams?.get('chapterId') || '';
+  
+  const { 
+    availableQuizzes, 
+    quizzesBySubject, 
+    quizzesByChapter, 
+    isLoadingQuizzes,
+    pagination
+  } = useSelector((state: RootState) => state.quiz);
 
-  const remainingCredits = totalCredits - usedCredits;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  
+  // Debug logs
+  console.log('QuizList state:', {
+    effectiveSubjectId,
+    effectiveChapterId,
+    availableQuizzes,
+    quizzesBySubject,
+    quizzesByChapter,
+    isLoadingQuizzes,
+    pagination
+  });
+  // Determine which quizzes to display
+  let displayQuizzes: Quiz[] = [];
+  
+  console.log('Determining quizzes to display:', {
+    effectiveChapterId,
+    effectiveSubjectId,
+    hasChapterQuizzes: effectiveChapterId ? !!quizzesByChapter[effectiveChapterId] : false,
+    hasSubjectQuizzes: effectiveSubjectId ? !!quizzesBySubject[effectiveSubjectId] : false,
+    availableQuizzesCount: availableQuizzes.length,
+    allQuizzesBySubject: quizzesBySubject,
+    allQuizzesByChapter: quizzesByChapter
+  });
+  
+  if (effectiveChapterId && quizzesByChapter[effectiveChapterId]) {
+    displayQuizzes = quizzesByChapter[effectiveChapterId];
+    console.log('Using chapter quizzes:', displayQuizzes);
+  } else if (effectiveSubjectId) {
+    displayQuizzes = quizzesBySubject[effectiveSubjectId] || [];
+    console.log('Using subject quizzes:', displayQuizzes);
+  } else {
+    displayQuizzes = availableQuizzes;
+    console.log('Using available quizzes:', displayQuizzes);
+  }
 
-  const handleStartQuiz = (quizId: string, creditCost: number) => {
-    if (remainingCredits >= creditCost) {
-      dispatch(startQuiz(quizId));
-      dispatch(spendCredits({ amount: creditCost, description: 'Quiz attempt' }));
-      onStartQuiz();
-      navigate(`/start-quiz/${quizId}`);
-    }
+  // Load appropriate quizzes based on context
+  useEffect(() => {
+    const loadQuizzes = async () => {
+      try {
+        if (effectiveChapterId) {
+          await dispatch(loadQuizzesByChapter({ 
+            chapterId: effectiveChapterId, 
+            page: currentPage, 
+            limit: itemsPerPage 
+          }));
+        } else if (effectiveSubjectId) {
+          await dispatch(loadQuizzesBySubject({ 
+            subjectId: effectiveSubjectId, 
+            page: currentPage, 
+            limit: itemsPerPage 
+          }));
+        } else {
+          await dispatch(loadQuizzesAsync({ 
+            page: currentPage, 
+            limit: itemsPerPage 
+          }));
+        }
+      } catch (error) {
+        console.error('Error loading quizzes:', error);
+      }
+    };
+    
+    loadQuizzes();
+  }, [effectiveSubjectId, effectiveChapterId, dispatch, currentPage, itemsPerPage]);
+
+  const handleStartQuiz = (quizId: string) => {
+    dispatch(startQuiz(quizId));
+    onStartQuiz();
+    router.push(`/start-quiz/${quizId}`);
   };
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
+  const getDifficultyColor = (difficulty?: string) => {
+    if (!difficulty) return 'secondary';
+    switch (difficulty.toLowerCase()) {
       case 'easy': return 'success';
       case 'medium': return 'warning';
       case 'hard': return 'danger';
@@ -40,78 +129,125 @@ const QuizList: React.FC<QuizListProps> = ({ onStartQuiz }) => {
     }
   };
 
+  if (isLoadingQuizzes && displayQuizzes.length === 0) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <Loader2 className="animate-spin h-12 w-12 text-blue-500" />
+        <span className="sr-only">Loading quizzes...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-900">Available Quizzes</h2>
-        <p className="text-gray-600 mt-1">Test your knowledge and earn certificates</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {availableQuizzes.map((quiz, index) => (
-          <motion.div
-            key={quiz.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <Card className="p-6 h-full flex flex-col">
-              <div className="flex items-start justify-between mb-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-3xl font-bold text-gray-900">{title}</h2>
+          {pagination && (
+            <div className="text-sm text-gray-600">
+              Showing {displayQuizzes.length} of {pagination.total} quizzes
+            </div>
+          )}
+        </div>
+        <p className="mt-2 text-lg text-gray-600">{description}</p>
+        
+        {pagination && (
+          <div className="mt-4 flex items-center justify-between">
+            <div className="flex space-x-2">
+              <Button 
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={!pagination || currentPage <= 1 || isLoadingQuizzes}
+                variant="outline"
+              >
+                Previous
+              </Button>
+              <Button 
+                onClick={() => setCurrentPage(prev => prev + 1)}
+                disabled={!pagination || currentPage >= pagination.totalPages || isLoadingQuizzes}
+                variant="outline"
+              >
+                Next
+              </Button>
+            </div>
+            <div className="text-sm text-gray-600">
+              Page {currentPage} of {pagination?.totalPages || 1}
+            </div>
+          </div>
+        )}
+        
+        {displayQuizzes.length === 0 && !isLoadingQuizzes ? (
+          <div className="text-center py-12">
+            <BookOpen className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-lg font-medium text-gray-900">No quizzes found</h3>
+            <p className="mt-1 text-gray-500">There are no quizzes available at the moment.</p>
+          </div>
+        ) : (
+          displayQuizzes.map((quiz) => (
+            <motion.div
+              key={quiz.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ y: -5, transition: { duration: 0.2 } }}
+              transition={{ duration: 0.3 }}
+              className="h-full"
+            >
+              <Card className="h-full flex flex-col hover:shadow-lg transition-shadow duration-200 p-6">
                 <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    {quiz.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-3">
-                    {quiz.description}
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-lg font-semibold text-gray-900">{quiz.title}</h3>
+                    <Badge variant={getDifficultyColor(quiz.averageDifficulty)}>
+                      {quiz.averageDifficulty || 'Medium'}
+                    </Badge>
+                  </div>
+                  
+                  <p className="text-gray-600 mb-4 line-clamp-2">
+                    {quiz.description || 'Test your knowledge with this quiz'}
                   </p>
-                </div>
-                <div className="ml-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Brain className="h-6 w-6 text-blue-600" />
+                  
+                  <div className="space-y-2 text-sm text-gray-600 mb-4">
+                    {quiz.primarySubject && (
+                      <div className="flex items-center">
+                        <BookOpen className="w-4 h-4 mr-2 text-blue-500" />
+                        <span>{quiz.primarySubject.name}</span>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center">
+                      <Clock className="w-4 h-4 mr-2 text-blue-500" />
+                      <span>{quiz.timeLimit ? `${quiz.timeLimit} min` : 'No time limit'}</span>
+                    </div>
+                    
+                    <div className="flex items-center">
+                      <Bookmark className="w-4 h-4 mr-2 text-blue-500" />
+                      <span>{quiz.questionCount || (quiz.questions ? quiz.questions.length : 0)} questions</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              <div className="flex flex-wrap gap-2 mb-4">
-                <Badge variant="secondary">{quiz.subject}</Badge>
-                <Badge variant={getDifficultyColor(quiz.difficulty) as any}>
-                  {quiz.difficulty}
-                </Badge>
-              </div>
-
-              <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                <div className="flex items-center">
-                  <Clock className="h-4 w-4 mr-1" />
-                  {Math.round(quiz.timeLimit / 60)} minutes
-                </div>
-                <div className="flex items-center">
-                  <Star className="h-4 w-4 mr-1" />
-                  {quiz.questions.length} questions
-                </div>
-              </div>
-
-              <div className="mt-auto">
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-semibold text-blue-600">
-                    {quiz.creditCost} credits
-                  </span>
-                  <Button
-                    variant="primary"
-                    disabled={remainingCredits < quiz.creditCost}
-                    onClick={() => handleStartQuiz(quiz.id, quiz.creditCost)}
-                  >
-                    {remainingCredits < quiz.creditCost ? 'Insufficient Credits' : 'Start Quiz'}
-                  </Button>
-                </div>
-                {remainingCredits < quiz.creditCost && (
-                  <p className="text-red-600 text-sm mt-2">
-                    You need {quiz.creditCost - remainingCredits} more credits
-                  </p>
-                )}
-              </div>
-            </Card>
-          </motion.div>
-        ))}
+                
+                <Button 
+                  onClick={() => handleStartQuiz(quiz.id)}
+                  className="w-full mt-4 bg-blue-600 hover:bg-blue-700"
+                >
+                  Start Quiz
+                </Button>
+              </Card>
+            </motion.div>
+          ))
+        )}
+        {displayQuizzes.length === 0 && !isLoadingQuizzes && (
+          <div className="col-span-full text-center py-8">
+            <p className="text-gray-500">No quizzes available yet.</p>
+            {effectiveChapterId && (
+              <Button 
+                variant="outline" 
+                className="mt-4"
+                onClick={() => router.back()}
+              >
+                Back to Chapters
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

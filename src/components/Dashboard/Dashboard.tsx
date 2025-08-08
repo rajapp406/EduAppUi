@@ -8,20 +8,20 @@ import Button from '../ui/Button';
 import Badge from '../ui/Badge';
 import ProgressBar from '../ui/ProgressBar';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 
 
 const Dashboard: React.FC = () => {
   const { totalCredits, usedCredits } = useSelector((state: RootState) => state.credits);
   const { completedQuizzes } = useSelector((state: RootState) => state.quiz);
   const { lessons } = useSelector((state: RootState) => state.lessons);
-  const navigate = useNavigate();
+  const router = useRouter();
   const remainingCredits = totalCredits - usedCredits;
   const completedLessons = lessons.filter(l => l.completed).length;
   const averageScore = completedQuizzes.length > 0 
     ? Math.round(completedQuizzes.reduce((sum, quiz) => sum + quiz.score, 0) / completedQuizzes.length)
     : 0;
-
+console.log('dashboard...0000');
   const recentLessons = lessons.slice(0, 3);
   const recentQuizzes = [
     { id: '1', title: 'Basic Mathematics', difficulty: 'easy', creditCost: 5 },
@@ -78,7 +78,7 @@ const Dashboard: React.FC = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate('/lessons')}
+                onClick={() => router.push('/lessons')}
               >
                 View All
               </Button>
@@ -129,7 +129,7 @@ const Dashboard: React.FC = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate('/quiz')}
+                onClick={() => router.push('/quiz')}
               >
                 View All
               </Button>
@@ -178,7 +178,7 @@ const Dashboard: React.FC = () => {
             <Button
               variant="primary"
               className="flex items-center justify-center space-x-2"
-              onClick={() => navigate('/quiz')}
+              onClick={() => router.push('/quiz')}
             >
               <Brain className="h-4 w-4" />
               <span>Take Quiz</span>
@@ -186,15 +186,15 @@ const Dashboard: React.FC = () => {
             <Button
               variant="secondary"
               className="flex items-center justify-center space-x-2"
-              onClick={() => navigate('/lessons')}
+              onClick={() =>    router.push('/subjects')}
             >
               <Play className="h-4 w-4" />
-              <span>Watch Lesson</span>
+              <span>Subjects</span>
             </Button>
             <Button
               variant="outline"
               className="flex items-center justify-center space-x-2"
-              onClick={() => navigate('/olympiad')}
+              onClick={() => router.push('/olympiad')}
             >
               <Award className="h-4 w-4" />
               <span>Olympiad Prep</span>
@@ -202,7 +202,7 @@ const Dashboard: React.FC = () => {
             <Button
               variant="ghost"
               className="flex items-center justify-center space-x-2"
-              onClick={() => navigate('/progress')}
+              onClick={() => router.push('/progress')}
             >
               <TrendingUp className="h-4 w-4" />
               <span>View Progress</span>

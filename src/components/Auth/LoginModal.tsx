@@ -1,7 +1,9 @@
+'use client';
+
 import { useState } from 'react';
 import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { X, Mail, Lock } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import Button from '../ui/Button';
 import { motion } from 'framer-motion';
 import { AuthService } from '../../services/authService';
@@ -13,12 +15,12 @@ interface LoginModalProps {
 }
 
 const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [isSignUp, setIsSignUp] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
-    password: '',
+    email: 'john.doe1@example.com',
+    password: 'SecurePassword123!',
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -31,26 +33,38 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
     try {
       setIsLoading(true);
       await AuthService.loginWithGoogle(credentialResponse.credential);
+      // Don't navigate here - let the ProtectedRoute handle it
       onClose();
-      navigate('/dashboard');
     } catch (error) {
       console.error('Google login failed:', error);
-      // You might want to show an error message to the user here
+      // Show error to user
+      alert('Google login failed. Please try again.');
     } finally {
+      console.log('Google login attempt finished');
       setIsLoading(false);
     }
   };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isLoading) {
+      return;
+    }
+
+    if (!formData.email || !formData.password) {
+      alert('Please fill in all fields');
+      return;
+    }
+
     try {
-      setIsLoading(true);
-      await AuthService.login(formData.email, formData.password);
-      onClose();
-      navigate('/dashboard');
+     // setIsLoading(true);
+     const r =   await AuthService.login(formData.email, formData.password);
+      console.log(r);
+      // Don't navigate here - let the ProtectedRoute handle it
     } catch (error) {
-      console.error('Login failed:', error);
-      // You might want to show an error message to the user here
+      console.error('Email login failed:', error);
+      alert('Login failed. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }
@@ -66,22 +80,24 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+    <div className="fixed inset-0 z-50 overflow-y-auto" style={{ pointerEvents: 'auto' }}>
+      <div className="flex min-h-screen items-center justify-center p-4" style={{ pointerEvents: 'auto' }}>
+        {/* Overlay */}
         <div 
-          className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
+          className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" 
           onClick={onClose}
+          style={{ pointerEvents: 'auto' }}
           aria-hidden="true"
         ></div>
-
         {/* This element is to trick the browser into centering the modal contents. */}
         <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl"
+          className="relative bg-white rounded-lg p-8 w-full max-w-md mx-auto"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          transition={{ duration: 0.2 }}
+          style={{ pointerEvents: 'auto' }}
         >
           <div className="absolute top-0 right-0 pt-4 pr-4">
             <button
@@ -95,14 +111,20 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
           </div>
 
               {/* Social Login Buttons */}
-              <div className="space-y-3 mb-6">
-                <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
-                  click_listener={() => console.log('Google login clicked')}
-                  onError={() => console.log('Google login failed')}
-                  useOneTap
-                />
-
+              <div className="space-y-3 mb-6" style={{ pointerEvents: 'auto' }}>
+                <div className="google-signin-wrapper">
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={() => {
+                      console.error('Google login failed');
+                      // You might want to show an error message to the user here
+                    }}
+                    useOneTap={isOpen} // Only enable One Tap when modal is open
+                    auto_select={false}
+                    cancel_on_tap_outside={false}
+                    prompt_parent_id="google-signin-wrapper"
+                  />
+                </div>
               </div>
 
               <div className="relative mb-6">
@@ -115,7 +137,10 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
               </div>
 
               {/* Email Form */}
-              <form onSubmit={handleEmailSubmit} className="space-y-4">
+              <form onSubmit={(e) => {
+                console.log('Form submit triggered');
+                handleEmailSubmit(e);
+              }} className="space-y-6">
                 {isSignUp && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -171,7 +196,13 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                   </div>
                 </div>
 
-                <Button type="submit" variant="primary" className="w-full">
+                <Button 
+                  type="button"
+                  variant="primary"
+                  loading={isLoading}
+                  className="w-full"
+                  onClick={handleEmailSubmit}
+                >
                   {isSignUp ? 'Create Account' : 'Sign In'}
                 </Button>
               </form>

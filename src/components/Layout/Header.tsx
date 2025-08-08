@@ -5,6 +5,7 @@ import { RootState } from '../../store/store';
 import { GraduationCap, User, LogOut, Coins } from 'lucide-react';
 import Button from '../ui/Button';
 import LoginModal from '../Auth/LoginModal';
+import Link from 'next/link';
 
 const Header: React.FC = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -27,7 +28,9 @@ const Header: React.FC = () => {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-2">
               <GraduationCap className="h-8 w-8 text-blue-600" />
-              <h1 className="text-xl font-bold text-gray-900">EduPlatform</h1>
+              <h1 className="text-xl font-bold text-gray-900">
+                <Link href="/dashboard">EduPlatform</Link>
+              </h1>
             </div>
 
             {isAuthenticated && user ? (

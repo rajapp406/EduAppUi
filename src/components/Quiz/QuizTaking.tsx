@@ -8,6 +8,9 @@ import Card from '../ui/Card';
 import Button from '../ui/Button';
 import ProgressBar from '../ui/ProgressBar';
 import { motion } from 'framer-motion';
+import { useParams } from 'next/navigation';
+import { QuestionType } from '@/models/api';
+import { QuestionComponent } from '../reusable/QuestionComponent';
 
 interface QuizTakingProps {
   onQuizComplete: () => void;
@@ -15,12 +18,15 @@ interface QuizTakingProps {
 
 const QuizTaking: React.FC<QuizTakingProps> = ({ onQuizComplete }) => {
   const dispatch = useDispatch();
+  const quizId = useParams()
   const { currentQuiz, currentQuestionIndex, userAnswers, timeRemaining } = useSelector(
     (state: RootState) => state.quiz
   );
+  console.log('currentQuiz', currentQuiz);
   const [showResults, setShowResults] = useState(false);
 
   useEffect(() => {
+    console.log(quizId)
     if (timeRemaining > 0) {
       const timer = setInterval(() => {
         dispatch(updateTimer());
@@ -42,23 +48,24 @@ const QuizTaking: React.FC<QuizTakingProps> = ({ onQuizComplete }) => {
 
   const handleSubmit = () => {
     dispatch(submitQuiz());
-    
+    onQuizComplete();
+
     // Calculate score and award bonus credits
-    const correctAnswers = userAnswers.filter((answer, index) => 
-      answer === currentQuiz.questions[index].correctAnswer
+    const correctAnswers = userAnswers.filter((answer, index) =>
+      answer === currentQuiz.questions[index].options.find((option) => option.isCorrect)?.text
     ).length;
     const score = Math.round((correctAnswers / currentQuiz.questions.length) * 100);
-    
+
     if (score >= 80) {
       dispatch(earnCredits({ amount: 5, description: 'High score bonus' }));
     }
-    
+
     setShowResults(true);
   };
 
   if (showResults) {
-    const correctAnswers = userAnswers.filter((answer, index) => 
-      answer === currentQuiz.questions[index].correctAnswer
+    const correctAnswers = userAnswers.filter((answer, index) =>
+      answer === currentQuiz.questions[index].options.find((option) => option.isCorrect)?.text
     ).length;
     const score = Math.round((correctAnswers / currentQuiz.questions.length) * 100);
 
@@ -71,11 +78,10 @@ const QuizTaking: React.FC<QuizTakingProps> = ({ onQuizComplete }) => {
         >
           <Card className="p-8 text-center">
             <div className="mb-6">
-              <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${
-                score >= 80 ? 'bg-green-100 text-green-600' : 
-                score >= 60 ? 'bg-yellow-100 text-yellow-600' : 
-                'bg-red-100 text-red-600'
-              }`}>
+              <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${score >= 80 ? 'bg-green-100 text-green-600' :
+                  score >= 60 ? 'bg-yellow-100 text-yellow-600' :
+                    'bg-red-100 text-red-600'
+                }`}>
                 <Flag className="h-10 w-10" />
               </div>
               <h2 className="text-3xl font-bold text-gray-900 mb-2">Quiz Complete!</h2>
@@ -118,11 +124,11 @@ const QuizTaking: React.FC<QuizTakingProps> = ({ onQuizComplete }) => {
             </span>
           </div>
         </div>
-        
+
         <div className="mb-2">
           <ProgressBar progress={progress} showLabel />
         </div>
-        
+
         <p className="text-sm text-gray-600">
           Question {currentQuestionIndex + 1} of {currentQuiz.questions.length}
         </p>
@@ -135,58 +141,11 @@ const QuizTaking: React.FC<QuizTakingProps> = ({ onQuizComplete }) => {
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <Card className="p-8 mb-6">
-          <h3 className="text-xl font-semibold text-gray-900 mb-6">
-            {currentQuestion.question}
-          </h3>
-
-          {currentQuestion.type === 'multiple-choice' && currentQuestion.options && (
-            <div className="space-y-3">
-              {currentQuestion.options.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleAnswerSelect(index)}
-                  className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
-                    userAnswers[currentQuestionIndex] === index
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
-                      userAnswers[currentQuestionIndex] === index
-                        ? 'border-blue-500 bg-blue-500'
-                        : 'border-gray-300'
-                    }`}>
-                      {userAnswers[currentQuestionIndex] === index && (
-                        <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5" />
-                      )}
-                    </div>
-                    {option}
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {currentQuestion.type === 'true-false' && (
-            <div className="space-y-3">
-              {['True', 'False'].map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleAnswerSelect(option.toLowerCase())}
-                  className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
-                    userAnswers[currentQuestionIndex] === option.toLowerCase()
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-          )}
-        </Card>
+        <QuestionComponent
+          currentQuestion={currentQuestion}
+          userAnswers={userAnswers}
+          currentQuestionIndex={currentQuestionIndex}
+          handleAnswerSelect={handleAnswerSelect} />
       </motion.div>
 
       {/* Navigation */}

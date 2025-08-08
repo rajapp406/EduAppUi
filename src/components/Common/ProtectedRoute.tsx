@@ -9,19 +9,20 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
-  redirectPath = '/',
+  redirectPath = '/login',
   children,
 }) => {
   const { isAuthenticated, isLoading } = useAppSelector((state: RootState) => state.auth);
   const location = useLocation();
-  const [isClient, setIsClient] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    // Mark initialization as complete after first render
+    setIsInitialized(true);
   }, []);
 
-  // Don't render anything until client-side hydration is complete
-  if (!isClient) {
+  // Don't render anything until after first render to avoid hydration mismatches
+  if (!isInitialized) {
     return null;
   }
 
@@ -34,13 +35,14 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  // If not authenticated, redirect to login
-  if (!isAuthenticated) {
-    // Only redirect if we're not already on the login page to prevent loops
-    if (location.pathname !== redirectPath) {
-      return <Navigate to={redirectPath} state={{ from: location }} replace />;
-    }
-    return null;
+  // If not authenticated and not on the login page, redirect to login
+  if (!isAuthenticated && location.pathname !== '/login') {
+    return <Navigate to={redirectPath} state={{ from: location }} replace />;
+  }
+
+  // If authenticated and trying to access login page, redirect to dashboard
+  if (isAuthenticated && location.pathname === '/login') {
+    return <Navigate to="/dashboard" replace />;
   }
 
   // If we have children, render them, otherwise render the Outlet for nested routes
@@ -73,7 +75,7 @@ export const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // If authenticated, redirect to the home page or the page they were trying to access
   if (isAuthenticated) {
-    return <Navigate to={from} replace />;
+    return <Navigate to='lessons' replace />;
   }
 
   // If not authenticated, render the public content
