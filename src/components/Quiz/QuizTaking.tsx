@@ -79,7 +79,7 @@ console.log(userAnswers, 'userAnswersuserAnswers')
   const handleSubmit = () => {
     console.log("handleSubmit", currentQuizAttempt)
     dispatch(submitQuizAttempt(userAnswers as any));
-    //onQuizComplete();
+    onQuizComplete();
 
     // Calculate score and award bonus credits
     const correctAnswers = userAnswers.filter((answer, index) =>
