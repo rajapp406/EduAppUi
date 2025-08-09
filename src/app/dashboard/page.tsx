@@ -12,7 +12,7 @@ import { MainLayout } from '@/components/Layout/MainLayout';
 export default function DashboardPage() {
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, isLoading, user } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     setIsClient(true);
@@ -20,10 +20,14 @@ export default function DashboardPage() {
 
   // Handle client-side redirection
   useEffect(() => {
-    if (isClient && !isLoading && !isAuthenticated) {
-      router.push('/login');
+    if (isClient && !isLoading) {
+      if (!isAuthenticated) {
+        router.push('/login');
+      } else if (user && !user.isOnboardingComplete) {
+        router.push('/onboarding');
+      }
     }
-  }, [isClient, isAuthenticated, isLoading, router]);
+  }, [isClient, isAuthenticated, isLoading, user, router]);
 
   // Show loading state until we know if user is authenticated
   if (!isClient || isLoading) {

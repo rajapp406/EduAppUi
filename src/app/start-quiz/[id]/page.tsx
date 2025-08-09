@@ -7,7 +7,7 @@ import { RootState } from '@/store/store';
 import type { AppDispatch } from '@/store/store';
 import { Loader2 } from 'lucide-react';
 import QuizTaking from '@/components/Quiz/QuizTaking';
-import { fetchQuiz } from '@/store/slices/quizSlice';
+import { fetchQuiz, startQuizAttempt } from '@/store/slices/quiz/thunks';
 import { MainLayout } from '@/components/Layout/MainLayout';
 
 export default function QuizPage() {
@@ -23,11 +23,10 @@ console.log('isLoading', isLoading);
 console.log('error', error);
   useEffect(() => {
     setIsClient(true);
-console.log('currentQuiz', currentQuiz);
-    
       // Fetch quiz data when component mounts
     if (id) {
       dispatch(fetchQuiz(id) as any);
+      dispatch(startQuizAttempt(id))
     }
   }, [dispatch, id]);
 
@@ -80,6 +79,7 @@ console.log('currentQuiz', currentQuiz);
     <MainLayout>  
     <div className="container mx-auto p-4">
       <QuizTaking 
+          currentQuiz={currentQuiz}
         onQuizComplete={() => {
           // Handle quiz completion
           router.push('/quiz/results');

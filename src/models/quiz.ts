@@ -22,18 +22,30 @@ export interface CompletedQuiz {
   correctAnswers: number;
 }
 
+export interface QuizAttempt {
+  id: string;
+  quizId: string;
+  userProfileId: string;
+  startTime: string;
+  endTime: string;
+  totalQuestions: number;
+  correctAnswers: number;
+  score: number;
+}
+
 export interface QuizState {
   // General quiz state
   availableQuizzes: Quiz[];
+  quiz: Quiz;
   currentQuiz: Quiz | null;
   currentQuestionIndex: number;
-  userAnswers: string[];
+  userAnswers: QuizAnswer[];
   isActive: boolean;
   error: string | null;
   timeRemaining: number;
   isLoading: boolean;
   completedQuizzes: CompletedQuiz[];
-  
+  currentQuizAttempt: QuizAttempt | null;
   // Loading states
   isLoadingQuizzes: boolean;
   
@@ -49,4 +61,12 @@ export interface QuizState {
     totalPages: number;
     hasMore: boolean;
   };
+}
+
+export interface QuizAnswer {
+  quizAttemptId: string,
+  questionId: string,
+  selectedOption: string | number,
+  textAnswer: string,
+  timeSpent: number
 }

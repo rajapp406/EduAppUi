@@ -2,7 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { createWrapper } from 'next-redux-wrapper';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import authReducer from '@/store/slices/authSlice';
-import quizReducer from '@/store/slices/quizSlice';
+import quizReducer from '@/store/slices/quiz/quizSlice';
 
 const makeStore = () =>
   configureStore({

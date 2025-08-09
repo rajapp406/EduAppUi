@@ -3,12 +3,12 @@
 import { useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAppDispatch } from '@/store/store';
-import { loadQuizzesBySubject } from '@/store/slices/quizSlice';
 import QuizList from '@/components/Quiz/QuizList';
 import { useGetSubjectQuery } from '@/services/subjectApi';
 import { Loader } from '@/components/ui/loader';
 import { AlertCircle } from 'lucide-react';
 import { MainLayout } from '@/components/Layout/MainLayout';
+import { loadQuizzesBySubject } from '@/store/slices/quiz/thunks';
 export default function SubjectQuizzesPage() {
   const router = useRouter();
   const params = useParams();

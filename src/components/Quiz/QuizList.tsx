@@ -2,11 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store/store';
 import { 
-  loadQuizzesAsync, 
-  loadQuizzesBySubject, 
-  loadQuizzesByChapter, 
-  startQuiz 
-} from '../../store/slices/quizSlice';
+  loadQuizzesAsync,
+  loadQuizzesByChapter,
+  loadQuizzesBySubject,
+} from '../../store/slices/quiz/thunks';
 import { BookOpen, Clock, Bookmark, Loader2 } from 'lucide-react';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
@@ -14,6 +13,7 @@ import Badge from '../ui/Badge';
 import { motion } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Quiz } from '@/models/api';
+import { startQuiz } from '@/store/slices/quiz/quizSlice';
 
 interface QuizListProps {
   onStartQuiz?: () => void;

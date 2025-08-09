@@ -5,12 +5,13 @@ import { persistStore, persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, 
 import storage from 'redux-persist/lib/storage';
 import { subjectApi } from '@/services/subjectApi';
 import authSlice from './slices/authSlice';
-import quizSlice from './slices/quizSlice';
+import quizSlice from './slices/quiz/quizSlice';
 import lessonSlice from './slices/lessonSlice';
 import creditSlice from './slices/creditSlice';
 import subjectSlice from './slices/subjectSlice';
-import chapterSlice from './slices/chapterSlice';
+import chapterSlice from './slices/chapter/chapterSlice';
 import questionSlice from './slices/questionSlice';
+import onboardingSlice from './slices/onboardingSlice';
 
 const rootReducer = combineReducers({
   auth: authSlice,
@@ -20,6 +21,7 @@ const rootReducer = combineReducers({
   subjects: subjectSlice,
   chapters: chapterSlice,
   questions: questionSlice,
+  onboarding: onboardingSlice,
   [subjectApi.reducerPath]: subjectApi.reducer
 });
 

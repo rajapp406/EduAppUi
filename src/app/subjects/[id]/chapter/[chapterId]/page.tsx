@@ -3,10 +3,9 @@
 import { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/store/store';
-import { fetchChapter } from '@/store/slices/chapterSlice';
 import { Loader2, Play } from 'lucide-react';
 import Button from '@/components/ui/Button';
-import { fetchQuestion } from '@/store/slices/questionSlice';
+import { fetchChapter } from '@/store/slices/chapter/thunks';
 
 export default function ChapterDetailPage() {
   const router = useRouter();
@@ -20,7 +19,7 @@ export default function ChapterDetailPage() {
 console.log("availableQuestions", availableQuestions);
   useEffect(() => {
     if (chapterId) {
-      dispatch(fetchQuestion({chapterId, subjectId}));
+      dispatch(fetchChapter(chapterId));
     }
   }, [dispatch, chapterId, subjectId]);
 

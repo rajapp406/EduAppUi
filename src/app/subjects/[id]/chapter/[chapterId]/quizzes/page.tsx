@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { RootState, useAppDispatch } from '@/store/store';
-import { loadQuizzesByChapter } from '@/store/slices/quizSlice';
+import { loadQuizzesByChapter } from '@/store/slices/quiz/quizSlice';
 import QuizList from '@/components/Quiz/QuizList';
 import { subjectService } from '@/services/subjectService';
 import { chapterService } from '@/services/chapterService';

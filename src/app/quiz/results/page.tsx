@@ -17,7 +17,6 @@ export default function QuizResultsPage() {
   // Get the most recent quiz result
   console.log(completedQuizzes, currentQuiz, userAnswers)
   const latestResult = completedQuizzes[completedQuizzes.length - 1];
-console.log(latestResult)
   // Redirect if there are no completed quizzes
   useEffect(() => {
     if (!latestResult) {

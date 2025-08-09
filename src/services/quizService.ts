@@ -1,5 +1,7 @@
 import { Quiz, QuizType } from "@/models/api";
 import { ApiResponse, PaginatedResponse } from "@/models/api";
+import { QuizAnswer, QuizAttempt } from "@/models/quiz";
+import { submitQuizAttempt } from "@/store/slices/quiz/thunks/submitQuizThunk";
 
 interface GetQuizzesParams {
   subjectId?: string;
@@ -8,6 +10,8 @@ interface GetQuizzesParams {
   page?: number;
   limit?: number;
 }
+
+
 
 export const quizService = {
   getQuizById: async (id: string): Promise<Quiz> => {
@@ -89,4 +93,75 @@ export const quizService = {
     const response = await quizService.getQuizzes({});
     return response.data || [];
   },
+  getQuizAttempt: async (id: string): Promise<QuizAttempt> => {
+    try {
+      const response = await fetch(`http://localhost:3100/quiz-attempts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          quizId: id,
+          userProfileId: '8d7afc71-eae0-4c66-9288-6e294ab878bb',
+        }), 
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to fetch quiz');
+      }
+      
+      const apiResponse: ApiResponse<QuizAttempt> = await response.json();
+      console.log('getQuizById response:', apiResponse);
+      if (!apiResponse.success || !apiResponse.data) {
+        console.log('getQuizById response:', apiResponse);
+        throw new Error(apiResponse.message || 'Failed to attenpt quiz');
+      }
+      
+      console.log('getQuizById response:', {
+        response: apiResponse,
+        hasData: !!apiResponse.data,
+        quizId: apiResponse.data?.id
+      });
+      
+      return apiResponse.data;
+    } catch (error) {
+      console.error('Error fetching quiz:', error);
+      throw error;
+    }
+  },
+
+  submitQuizAttempt: async (id: string, quizAnswers: QuizAnswer[]): Promise<Quiz> => { 
+    try {
+      const response = await fetch(`http://localhost:3100/quiz-attempts/${id}/submit-answers`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({answers: quizAnswers}), 
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to submit quiz');
+      }
+      
+      const apiResponse: ApiResponse<Quiz> = await response.json();
+      console.log('getQuizById response:', apiResponse);
+      if (!apiResponse.success || !apiResponse.data) {
+        console.log('getQuizById response:', apiResponse);
+        throw new Error(apiResponse.message || 'Failed to attenpt quiz');
+      }
+      
+      console.log('getQuizById response:', {
+        response: apiResponse,
+        hasData: !!apiResponse.data,
+        quizId: apiResponse.data?.id
+      });
+      
+      return apiResponse.data;
+    } catch (error) {
+      console.error('Error fetching quiz:', error);
+      throw error;
+    }
+  },
+
 };

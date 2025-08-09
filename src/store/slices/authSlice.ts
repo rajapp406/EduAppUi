@@ -11,6 +11,7 @@ export interface User {
   provider?: ProviderType;
   accessToken: string;
   refreshToken: string;
+  isOnboardingComplete?: boolean;
 }
 
 export interface AuthState {
@@ -152,10 +153,27 @@ const authSlice = createSlice({
         });
       }
     },
+    completeOnboarding: (state) => {
+      if (state.user) {
+        state.user.isOnboardingComplete = true;
+        
+        // Update auth data in localStorage
+        const authData = storage.getAuthData();
+        if (authData) {
+          storage.setAuthData({
+            ...authData,
+            user: {
+              ...authData.user,
+              isOnboardingComplete: true
+            }
+          });
+        }
+      }
+    },
   },
 });
 
-export const { login, logout, socialLogin, setLoading, updateTokens } = authSlice.actions;
+export const { login, logout, socialLogin, setLoading, updateTokens, completeOnboarding } = authSlice.actions;
 
 export const selectCurrentUser = (state: { auth: AuthState }) => state.auth.user;
 export const selectIsAuthenticated = (state: { auth: AuthState }) => state.auth.isAuthenticated;

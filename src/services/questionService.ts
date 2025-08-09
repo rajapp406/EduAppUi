@@ -13,7 +13,7 @@ export const questionService = {
       console.error('Error fetching Questions:', error);
       throw error;
     });
-    return response;
+    return response.data;
   },
   async getAllQuestions(subjectId: string, chapterId: string): Promise<QuestionResponse[]> {
     const response = await fetch(`http://localhost:3100/question?subjectId=${subjectId}&chapterId=${chapterId}`)
@@ -26,6 +26,6 @@ export const questionService = {
       console.error('Error fetching Questions:', error);
       throw error;
     });
-    return response;
+    return response.data;
   }
 };

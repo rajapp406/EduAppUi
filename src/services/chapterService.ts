@@ -20,7 +20,7 @@ export const chapterService = {
     
     const data = await response.json();
     console.log('Chapter created successfully:', data);
-    return data;
+    return data.data;
   },
 
   // Read (Single)
@@ -33,7 +33,7 @@ export const chapterService = {
     
     const data = await response.json();
     console.log('Chapter fetched successfully:', data);
-    return data;
+    return data.data;
   },
 
   // Read (All for Subject)
@@ -46,7 +46,7 @@ export const chapterService = {
     
     const data = await response.json();
     console.log('Chapters fetched successfully:', data);
-    return data;
+    return data.data;
   },
 
   // Read (All)
@@ -59,7 +59,7 @@ export const chapterService = {
     
     const data = await response.json();
     console.log('All chapters fetched successfully:', data);
-    return data;
+    return data.data;
   },
 
   // Update
@@ -79,7 +79,7 @@ export const chapterService = {
     
     const data = await response.json();
     console.log('Chapter updated successfully:', data);
-    return data;
+    return data.data;
   },
 
   // Delete
@@ -106,6 +106,6 @@ export const chapterService = {
     
     const data = await response.json();
     console.log('Chapter quizzes fetched successfully:', data);
-    return data;
+    return data.data;
   }
 };

@@ -3,11 +3,11 @@
 import { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/store/store';
-import { loadChaptersBySubjectIdAsync } from '@/store/slices/chapterSlice';
 import { Loader2 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { Chapter } from '@/models/chapter';
 import { MainLayout } from '@/components/Layout/MainLayout';
+import { loadChaptersBySubjectIdAsync } from '@/store/slices/chapter/thunks';
 
 export default function SubjectChaptersPage() {
   const router = useRouter();

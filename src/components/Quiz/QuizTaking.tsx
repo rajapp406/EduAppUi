@@ -1,58 +1,89 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../../store/store';
-import { answerQuestion, nextQuestion, previousQuestion, submitQuiz, updateTimer } from '../../store/slices/quizSlice';
+import { useSelector } from 'react-redux';
+import { RootState, useAppDispatch } from '../../store/store';
+import { answerQuestion, nextQuestion, previousQuestion, submitQuiz } from '../../store/slices/quiz/quizSlice';
 import { earnCredits } from '../../store/slices/creditSlice';
 import { Clock, ChevronLeft, ChevronRight, Flag } from 'lucide-react';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import ProgressBar from '../ui/ProgressBar';
 import { motion } from 'framer-motion';
-import { useParams } from 'next/navigation';
-import { QuestionType } from '@/models/api';
 import { QuestionComponent } from '../reusable/QuestionComponent';
+import { Loader2 } from 'lucide-react';
+import { Quiz } from '@/models/api';
+import { submitQuizAttempt } from '@/store/slices/quiz/thunks/submitQuizThunk';
+import { QuizAnswer } from '@/models/quiz';
 
 interface QuizTakingProps {
   onQuizComplete: () => void;
+  currentQuiz: Quiz | null
 }
 
-const QuizTaking: React.FC<QuizTakingProps> = ({ onQuizComplete }) => {
-  const dispatch = useDispatch();
-  const quizId = useParams()
-  const { currentQuiz, currentQuestionIndex, userAnswers, timeRemaining } = useSelector(
+const QuizTaking: React.FC<QuizTakingProps> = ({ currentQuiz, onQuizComplete }) => {
+  const dispatch = useAppDispatch();
+  const { currentQuizAttempt, currentQuestionIndex, userAnswers, timeRemaining, isLoading, error } = useSelector(
     (state: RootState) => state.quiz
   );
-  console.log('currentQuiz', currentQuiz);
   const [showResults, setShowResults] = useState(false);
 
-  useEffect(() => {
-    console.log(quizId)
-    if (timeRemaining > 0) {
-      const timer = setInterval(() => {
-        dispatch(updateTimer());
-      }, 1000);
-      return () => clearInterval(timer);
-    }
-  }, [timeRemaining, dispatch]);
+  // Remove the fetchQuiz call from QuizTaking since it's handled by the parent component
+  // The quiz data should already be available from the parent component
 
-  if (!currentQuiz) return null;
+  // Show loading state
+  if (isLoading || !currentQuiz) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+        <span className="ml-2">Loading quiz...</span>
+      </div>
+    );
+  }
 
-  const currentQuestion = currentQuiz.questions[currentQuestionIndex];
-  const progress = ((currentQuestionIndex + 1) / currentQuiz.questions.length) * 100;
+  // Show error state
+  if (error) {
+    return (
+      <div className="p-4 text-red-600 bg-red-50 rounded-md">
+        <p>Error loading quiz: {error}</p>
+      </div>
+    );
+  }
+console.log(currentQuizAttempt, 'currentQuizAttemptcurrentQuizAttempt')
+  // Add null checks for questions array
+  const questions = currentQuiz.questions || [];
+  const currentQuestion = questions[currentQuestionIndex];
+  const totalQuestions = questions.length;
+  
+  if (!currentQuestion || totalQuestions === 0) {
+    return (
+      <div className="p-4 text-yellow-600 bg-yellow-50 rounded-md">
+        No questions available for this quiz.
+      </div>
+    );
+  }
+
+  const progress = totalQuestions > 0 ? ((currentQuestionIndex + 1) / totalQuestions) * 100 : 0;
   const minutes = Math.floor(timeRemaining / 60);
   const seconds = timeRemaining % 60;
-
+console.log(userAnswers, 'userAnswersuserAnswers')
   const handleAnswerSelect = (answer: string | number) => {
-    dispatch(answerQuestion({ questionIndex: currentQuestionIndex, answer }));
+    const quizAnswer: QuizAnswer = {
+      quizAttemptId: currentQuizAttempt?.id || '',
+      questionId: currentQuestion.id,
+      selectedOption: answer,
+      textAnswer: '',
+      timeSpent: 0
+    };
+    dispatch(answerQuestion({ questionIndex: currentQuestionIndex, answer: quizAnswer }));
   };
 
   const handleSubmit = () => {
-    dispatch(submitQuiz());
-    onQuizComplete();
+    console.log("handleSubmit", currentQuizAttempt)
+    dispatch(submitQuizAttempt(userAnswers as any));
+    //onQuizComplete();
 
     // Calculate score and award bonus credits
     const correctAnswers = userAnswers.filter((answer, index) =>
-      answer === currentQuiz.questions[index].options.find((option) => option.isCorrect)?.text
+      answer.selectedOption === currentQuiz.questions[index].options.find((option) => option.isCorrect)?.text
     ).length;
     const score = Math.round((correctAnswers / currentQuiz.questions.length) * 100);
 
@@ -65,7 +96,7 @@ const QuizTaking: React.FC<QuizTakingProps> = ({ onQuizComplete }) => {
 
   if (showResults) {
     const correctAnswers = userAnswers.filter((answer, index) =>
-      answer === currentQuiz.questions[index].options.find((option) => option.isCorrect)?.text
+      answer.selectedOption === currentQuiz.questions[index].options.find((option) => option.isCorrect)?.text
     ).length;
     const score = Math.round((correctAnswers / currentQuiz.questions.length) * 100);
 
