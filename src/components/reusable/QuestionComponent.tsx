@@ -16,12 +16,12 @@ export const QuestionComponent = ({
     return (
         <Card className="p-8 mb-6">
         <h3 className="text-xl font-semibold text-gray-900 mb-6">
-          {currentQuestion.questionText}
+          {currentQuestion?.questionText}
         </h3>
 
-        {currentQuestion.questionType === QuestionType.MCQ && currentQuestion.options && (
+        {currentQuestion?.questionType === QuestionType.MCQ && currentQuestion?.options && (
           <div className="space-y-3">
-            {currentQuestion.options.map((option, index) => (
+            {currentQuestion?.options.map((option, index) => (
               <button
                 key={index}
                 onClick={() => handleAnswerSelect(option.text)}

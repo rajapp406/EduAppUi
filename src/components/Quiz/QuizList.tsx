@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../../store/store';
+import { RootState, useAppDispatch } from '../../store/store';
 import { 
   loadQuizzesAsync,
   loadQuizzesByChapter,
   loadQuizzesBySubject,
 } from '../../store/slices/quiz/thunks';
-import { BookOpen, Clock, Bookmark, Loader2 } from 'lucide-react';
+import { BookOpen, Clock, Bookmark } from 'lucide-react';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import Badge from '../ui/Badge';
 import { motion } from 'framer-motion';
+import { QuizLoader, QuizListSkeleton } from '../ui/QuizLoader';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Quiz } from '@/models/api';
 import { startQuiz } from '@/store/slices/quiz/quizSlice';
@@ -30,7 +31,7 @@ const QuizList: React.FC<QuizListProps> = ({
   title = 'Available Quizzes',
   description = 'Test your knowledge and earn certificates'
 }) => {
-  const dispatch: any = useDispatch();
+  const dispatch: any = useAppDispatch();
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -48,39 +49,16 @@ const QuizList: React.FC<QuizListProps> = ({
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  
-  // Debug logs
-  console.log('QuizList state:', {
-    effectiveSubjectId,
-    effectiveChapterId,
-    availableQuizzes,
-    quizzesBySubject,
-    quizzesByChapter,
-    isLoadingQuizzes,
-    pagination
-  });
+
   // Determine which quizzes to display
   let displayQuizzes: Quiz[] = [];
-  
-  console.log('Determining quizzes to display:', {
-    effectiveChapterId,
-    effectiveSubjectId,
-    hasChapterQuizzes: effectiveChapterId ? !!quizzesByChapter[effectiveChapterId] : false,
-    hasSubjectQuizzes: effectiveSubjectId ? !!quizzesBySubject[effectiveSubjectId] : false,
-    availableQuizzesCount: availableQuizzes.length,
-    allQuizzesBySubject: quizzesBySubject,
-    allQuizzesByChapter: quizzesByChapter
-  });
-  
+
   if (effectiveChapterId && quizzesByChapter[effectiveChapterId]) {
     displayQuizzes = quizzesByChapter[effectiveChapterId];
-    console.log('Using chapter quizzes:', displayQuizzes);
   } else if (effectiveSubjectId) {
     displayQuizzes = quizzesBySubject[effectiveSubjectId] || [];
-    console.log('Using subject quizzes:', displayQuizzes);
   } else {
     displayQuizzes = availableQuizzes;
-    console.log('Using available quizzes:', displayQuizzes);
   }
 
   // Load appropriate quizzes based on context
@@ -131,9 +109,12 @@ const QuizList: React.FC<QuizListProps> = ({
 
   if (isLoadingQuizzes && displayQuizzes.length === 0) {
     return (
-      <div className="flex justify-center items-center py-12">
-        <Loader2 className="animate-spin h-12 w-12 text-blue-500" />
-        <span className="sr-only">Loading quizzes...</span>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold text-gray-900">{title}</h2>
+          <p className="mt-2 text-lg text-gray-600">{description}</p>
+        </div>
+        <QuizListSkeleton count={6} />
       </div>
     );
   }
@@ -182,7 +163,8 @@ const QuizList: React.FC<QuizListProps> = ({
             <p className="mt-1 text-gray-500">There are no quizzes available at the moment.</p>
           </div>
         ) : (
-          displayQuizzes.map((quiz) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {displayQuizzes.map((quiz) => (
             <motion.div
               key={quiz.id}
               initial={{ opacity: 0, y: 20 }}
@@ -232,7 +214,38 @@ const QuizList: React.FC<QuizListProps> = ({
                 </Button>
               </Card>
             </motion.div>
-          ))
+            ))}
+            
+            {/* Show loading skeletons when loading more items */}
+            {isLoadingQuizzes && displayQuizzes.length > 0 && (
+              <>
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div key={`skeleton-${index}`} className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+                        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                      </div>
+                      <div className="w-12 h-6 bg-gray-200 rounded"></div>
+                    </div>
+                    
+                    <div className="space-y-2 mb-4">
+                      <div className="h-3 bg-gray-200 rounded w-full"></div>
+                      <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                    </div>
+                    
+                    <div className="space-y-2 mb-4">
+                      <div className="h-4 bg-gray-200 rounded w-32"></div>
+                      <div className="h-4 bg-gray-200 rounded w-24"></div>
+                      <div className="h-4 bg-gray-200 rounded w-28"></div>
+                    </div>
+                    
+                    <div className="h-10 bg-gray-200 rounded w-full"></div>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
         )}
         {displayQuizzes.length === 0 && !isLoadingQuizzes && (
           <div className="col-span-full text-center py-8">

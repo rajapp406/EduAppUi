@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState, useAppDispatch } from '../../store/store';
-import { answerQuestion, nextQuestion, previousQuestion, submitQuiz } from '../../store/slices/quiz/quizSlice';
+import { answerQuestion, nextQuestion, previousQuestion, submitQuiz, startQuiz, loadQuizzes } from '../../store/slices/quiz/quizSlice';
 import { earnCredits } from '../../store/slices/creditSlice';
 import { Clock, ChevronLeft, ChevronRight, Flag } from 'lucide-react';
 import Card from '../ui/Card';
@@ -11,7 +11,7 @@ import { motion } from 'framer-motion';
 import { QuestionComponent } from '../reusable/QuestionComponent';
 import { Loader2 } from 'lucide-react';
 import { Quiz } from '@/models/api';
-import { submitQuizAttempt } from '@/store/slices/quiz/thunks/submitQuizThunk';
+import { submitQuizAttempt, completeQuizAttempt } from '@/store/slices/quiz/thunks';
 import { QuizAnswer } from '@/models/quiz';
 
 interface QuizTakingProps {
@@ -26,11 +26,8 @@ const QuizTaking: React.FC<QuizTakingProps> = ({ currentQuiz, onQuizComplete }) 
   );
   const [showResults, setShowResults] = useState(false);
 
-  // Remove the fetchQuiz call from QuizTaking since it's handled by the parent component
-  // The quiz data should already be available from the parent component
-
   // Show loading state
-  if (isLoading || !currentQuiz) {
+  if (isLoading || !currentQuiz) {    
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -64,7 +61,6 @@ console.log(currentQuizAttempt, 'currentQuizAttemptcurrentQuizAttempt')
   const progress = totalQuestions > 0 ? ((currentQuestionIndex + 1) / totalQuestions) * 100 : 0;
   const minutes = Math.floor(timeRemaining / 60);
   const seconds = timeRemaining % 60;
-console.log(userAnswers, 'userAnswersuserAnswers')
   const handleAnswerSelect = (answer: string | number) => {
     const quizAnswer: QuizAnswer = {
       quizAttemptId: currentQuizAttempt?.id || '',
@@ -76,10 +72,11 @@ console.log(userAnswers, 'userAnswersuserAnswers')
     dispatch(answerQuestion({ questionIndex: currentQuestionIndex, answer: quizAnswer }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     console.log("handleSubmit", currentQuizAttempt)
-    dispatch(submitQuizAttempt(userAnswers as any));
-    onQuizComplete();
+    await dispatch(submitQuizAttempt(userAnswers as any));
+    await dispatch(completeQuizAttempt());
+    // onQuizComplete();
 
     // Calculate score and award bonus credits
     const correctAnswers = userAnswers.filter((answer, index) =>

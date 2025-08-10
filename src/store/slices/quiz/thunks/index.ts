@@ -19,3 +19,5 @@ export {startQuizAttempt}  from './startQuizAttemptThunk';
 export {loadQuizzesAsync}  from './loadQuizzesAsyncThunk';
 export {loadQuizzesBySubject}  from './loadQuizzesBySubjectThunk';
 export {loadQuizzesByChapter}  from './loadQuizzesByChapterThunk';
+export {submitQuizAttempt}  from './submitQuizThunk';
+export {completeQuizAttempt}  from './completeQuizThunk';

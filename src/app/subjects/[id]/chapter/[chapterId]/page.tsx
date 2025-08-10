@@ -16,7 +16,6 @@ export default function ChapterDetailPage() {
   const dispatch = useAppDispatch();
   const { currentChapter, isLoading, error } = useAppSelector((state) => state.chapters);
   const { availableQuestions } = useAppSelector((state) => state.questions);
-console.log("availableQuestions", availableQuestions);
   useEffect(() => {
     if (chapterId) {
       dispatch(fetchChapter(chapterId));
@@ -26,7 +25,7 @@ console.log("availableQuestions", availableQuestions);
   const handleBack = () => {
     router.push(`/subjects/${subjectId}/chapter`);
   };
-
+console.log("currentChapter", currentChapter);
   const handleStartQuiz = () => {
     router.push(`/subjects/${subjectId}/chapter/${chapterId}/quizzes`);
   };
@@ -48,7 +47,7 @@ console.log("availableQuestions", availableQuestions);
     );
   }
 
-  if (!availableQuestions.length) {
+  if (!currentChapter) {
     return (
       <div className="container mx-auto p-4">
         <p className="text-gray-500">Chapter not found</p>
@@ -87,12 +86,6 @@ console.log("availableQuestions", availableQuestions);
         <p className="text-gray-700 mb-4">
           Chapter {currentChapter?.chapterNumber}
         </p>
-        {availableQuestions?.map((question: any) => (
-          <div key={question.id}>
-            <h3 className="text-lg font-semibold">{question.questionText}</h3>
-            <p className="text-gray-600">{question.explanation}</p>
-          </div>
-        ))}
       </div>
     </div>
   );

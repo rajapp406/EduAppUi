@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Chapter, ChapterState } from '@/models/chapter';
 import { loadChaptersBySubjectIdAsync } from './thunks/loadChaptersBySubjectIdthunk';
-import { fetchChapter } from './thunks/fetchChapterThunk';
 import { extraReducersChapter } from './thunks/index';
 
 

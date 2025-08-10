@@ -2,6 +2,7 @@ import { QuizState } from "@/models/quiz";
 
 export const initialState: QuizState = {
     availableQuizzes: [],
+    quiz: null, // Added missing quiz property
     currentQuiz: null,
     currentQuestionIndex: 0,
     currentQuizAttempt: null,

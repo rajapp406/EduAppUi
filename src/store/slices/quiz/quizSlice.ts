@@ -24,13 +24,18 @@ const quizSlice = createSlice({
     },
     startQuiz: (state, action: PayloadAction<string>) => {
       const quiz = state.availableQuizzes.find(q => q.id === action.payload);
-      console.log(state, 'stateeee')
+      console.log('Starting quiz:', action.payload, 'Found quiz:', !!quiz);
       if (quiz) {
         state.currentQuiz = quiz;
+        state.quiz = quiz; // Also set the quiz property
         state.currentQuestionIndex = 0;
+        // Initialize userAnswers array with the correct length
         state.userAnswers = new Array(quiz.questions.length).fill(null);
         state.isActive = true;
-        state.timeRemaining = quiz.timeLimit;
+        state.timeRemaining = quiz.timeLimit || 1800; // Default 30 minutes
+        console.log('Quiz started successfully. Questions:', quiz.questions.length);
+      } else {
+        console.error('Quiz not found in availableQuizzes:', action.payload);
       }
     },
     answerQuestion: (state, action: PayloadAction<{ questionIndex: number; answer: QuizAnswer }>) => {

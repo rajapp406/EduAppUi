@@ -4,11 +4,12 @@ import { useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { RootState, useAppDispatch } from '@/store/store';
-import { loadQuizzesByChapter } from '@/store/slices/quiz/quizSlice';
+import { loadQuizzesByChapter } from '@/store/slices/quiz/thunks';
 import QuizList from '@/components/Quiz/QuizList';
 import { subjectService } from '@/services/subjectService';
 import { chapterService } from '@/services/chapterService';
 import { useQuery } from '@tanstack/react-query';
+import { MainLayout } from '@/components/Layout/MainLayout';
 
 export default function ChapterQuizzesPage() {
   const router = useRouter();
@@ -103,6 +104,7 @@ export default function ChapterQuizzesPage() {
   }
 
   return (
+    <MainLayout>
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
         <nav className="flex mb-4" aria-label="Breadcrumb">
@@ -119,7 +121,7 @@ export default function ChapterQuizzesPage() {
               <div className="flex items-center">
                 <span className="mx-2 text-gray-400">/</span>
                 <button 
-                  onClick={() => router.push(`/subjects/${subjectId}`)}
+                  onClick={() => router.push(`/subjects/${subjectId}/chapter`)}
                   className="text-blue-600 hover:text-blue-800"
                 >
                   {subject.name}
@@ -134,11 +136,6 @@ export default function ChapterQuizzesPage() {
             </li>
           </ol>
         </nav>
-        
-        <h1 className="text-3xl font-bold text-gray-900">{chapter.title} Quizzes</h1>
-        <p className="mt-2 text-gray-600">
-          Test your knowledge of {chapter.title} with these quizzes.
-        </p>
       </div>
       
       <QuizList 
@@ -147,5 +144,6 @@ export default function ChapterQuizzesPage() {
         description={`Test your knowledge of ${chapter.title} from ${subject.name}`}
       />
     </div>
+    </MainLayout>
   );
 }

@@ -6,6 +6,8 @@ export const API_CONFIG = {
     SCHOOLS_SEARCH: '/schools',
     LOCATIONS_SEARCH: '/locations/search',
     CITIES: '/locations/cities',
+    QUIZ_ATTEMPT: '/quiz-attempts',
+    QUIZZES: '/quizzes',
   },
   TIMEOUT: 30000, // 30 seconds
 };

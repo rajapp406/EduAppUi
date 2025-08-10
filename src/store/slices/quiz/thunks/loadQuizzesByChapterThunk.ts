@@ -14,7 +14,7 @@ import { ActionReducerMapBuilder, createAsyncThunk } from "@reduxjs/toolkit";
         );
         console.log('loadQuizzesByChapter: Successfully fetched quizzes:', response);
         return {
-          items: response.data || [],
+          items: response || [],
           meta: response.meta || { page: 1, limit: 10, total: 0, totalPages: 0 },
           chapterId: params.chapterId
         };
@@ -34,7 +34,7 @@ import { ActionReducerMapBuilder, createAsyncThunk } from "@reduxjs/toolkit";
       })
       .addCase(loadQuizzesByChapter.fulfilled, (state, action) => {
         state.isLoadingQuizzes = false;
-        state.availableQuizzes = action.payload.items;
+        state.availableQuizzes = action.payload.items as any;
       })
       .addCase(loadQuizzesByChapter.rejected, (state, action) => {
         state.isLoadingQuizzes = false;

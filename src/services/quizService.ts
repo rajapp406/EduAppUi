@@ -1,3 +1,4 @@
+import { API_CONFIG, buildApiUrl } from "@/config/api";
 import { Quiz, QuizType } from "@/models/api";
 import { ApiResponse, PaginatedResponse } from "@/models/api";
 import { QuizAnswer, QuizAttempt } from "@/models/quiz";
@@ -16,7 +17,7 @@ interface GetQuizzesParams {
 export const quizService = {
   getQuizById: async (id: string): Promise<Quiz> => {
     try {
-      const response = await fetch(`http://localhost:3100/quizzes/${id}`);
+      const response = await fetch(`${buildApiUrl(API_CONFIG.ENDPOINTS.QUIZZES)}/${id}`);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || 'Failed to fetch quiz');
@@ -54,9 +55,9 @@ export const quizService = {
       queryParams.append('limit', limit.toString());
       
       // Build URL
-      let url = `http://localhost:3100/quizzes`;
+      let url = `${buildApiUrl(API_CONFIG.ENDPOINTS.QUIZZES)}`;
       if (chapterId) {
-        url = `http://localhost:3100/quizzes/chapter/${chapterId}`;
+        url = `${buildApiUrl(API_CONFIG.ENDPOINTS.QUIZZES)}/chapter/${chapterId}`;
       } else {
         url = `${url}?${queryParams.toString()}`;
       }
@@ -73,7 +74,11 @@ export const quizService = {
         throw new Error(data.message || 'Failed to load quizzes');
       }
       
-      return data.data || { data: [], meta: { page, limit, total: 0, totalPages: 0 }, success: true };
+      return data.data || { 
+        data: [], 
+        meta: { page, limit, total: 0, totalPages: 0 },
+        success: true
+      };
     } catch (error) {
       console.error('Error fetching quizzes:', error);
       throw error;
@@ -95,7 +100,7 @@ export const quizService = {
   },
   getQuizAttempt: async (id: string): Promise<QuizAttempt> => {
     try {
-      const response = await fetch(`http://localhost:3100/quiz-attempts`, {
+      const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.QUIZ_ATTEMPT), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -111,17 +116,9 @@ export const quizService = {
       }
       
       const apiResponse: ApiResponse<QuizAttempt> = await response.json();
-      console.log('getQuizById response:', apiResponse);
       if (!apiResponse.success || !apiResponse.data) {
-        console.log('getQuizById response:', apiResponse);
         throw new Error(apiResponse.message || 'Failed to attenpt quiz');
       }
-      
-      console.log('getQuizById response:', {
-        response: apiResponse,
-        hasData: !!apiResponse.data,
-        quizId: apiResponse.data?.id
-      });
       
       return apiResponse.data;
     } catch (error) {
@@ -129,10 +126,9 @@ export const quizService = {
       throw error;
     }
   },
-
   submitQuizAttempt: async (id: string, quizAnswers: QuizAnswer[]): Promise<Quiz> => { 
     try {
-      const response = await fetch(`http://localhost:3100/quiz-attempts/${id}/submit-answers`, {
+      const response = await fetch(`${buildApiUrl(API_CONFIG.ENDPOINTS.QUIZ_ATTEMPT)}/${id}/submit-answers`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -164,4 +160,28 @@ export const quizService = {
     }
   },
 
+  quizComplete: async (id: string): Promise<Quiz> => { 
+    try {
+      const response = await fetch(`${buildApiUrl(API_CONFIG.ENDPOINTS.QUIZ_ATTEMPT)}/${id}/auto-complete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json', 
+        },
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to complete quiz');
+      }
+      
+      const apiResponse: ApiResponse<Quiz> = await response.json();
+      if (!apiResponse.success || !apiResponse.data) {
+        throw new Error(apiResponse.message || 'Failed to complete quiz');
+      }
+      
+      return apiResponse.data;
+    } catch (error) {
+      console.error('Error fetching quiz:', error);
+      throw error;
+    }
+  },
 };

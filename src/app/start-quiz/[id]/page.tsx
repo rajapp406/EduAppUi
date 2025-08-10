@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import type { AppDispatch } from '@/store/store';
-import { Loader2 } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 import QuizTaking from '@/components/Quiz/QuizTaking';
 import { fetchQuiz, startQuizAttempt } from '@/store/slices/quiz/thunks';
 import { MainLayout } from '@/components/Layout/MainLayout';
@@ -19,16 +19,48 @@ export default function QuizPage() {
   const { currentQuiz, isLoading, error } = useSelector((state: RootState) => state.quiz);
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const [isClient, setIsClient] = useState(false);
-console.log('isLoading', isLoading);
-console.log('error', error);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  console.log('Quiz Page State:', { 
+    id, 
+    isLoading, 
+    error, 
+    hasCurrentQuiz: !!currentQuiz,
+    currentQuizId: currentQuiz?.id,
+    questionsCount: currentQuiz?.questions?.length 
+  });
   useEffect(() => {
     setIsClient(true);
-      // Fetch quiz data when component mounts
-    if (id) {
-      dispatch(fetchQuiz(id) as any);
-      dispatch(startQuizAttempt(id))
+  }, []);
+
+  // Reset initialization when ID changes
+  useEffect(() => {
+    setIsInitialized(false);
+  }, [id]);
+
+  useEffect(() => {
+    // Fetch quiz data when component mounts and we have an ID
+    if (id && isClient && !isInitialized) {
+      console.log('Fetching quiz data for ID:', id);
+      setIsInitialized(true);
+      
+      const fetchData = async () => {
+        try {
+          const fetchResult = await dispatch(fetchQuiz(id) as any);
+          console.log('Fetch quiz result:', fetchResult);
+          
+          if (fetchResult.type.endsWith('/fulfilled')) {
+            const attemptResult = await dispatch(startQuizAttempt(id) as any);
+            console.log('Start quiz attempt result:', attemptResult);
+          }
+        } catch (error) {
+          console.error('Error fetching quiz data:', error);
+        }
+      };
+      
+      fetchData();
     }
-  }, [dispatch, id]);
+  }, [dispatch, id, isClient, isInitialized]);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -40,8 +72,22 @@ console.log('error', error);
   // Show loading state during initial render
   if (!isClient || isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="text-center">
+          <div className="relative mb-6">
+            <div className="absolute inset-0 animate-ping">
+              <BookOpen className="w-12 h-12 text-blue-500 mx-auto" />
+            </div>
+            <div className="relative">
+              <BookOpen className="w-12 h-12 text-blue-500 mx-auto" />
+            </div>
+          </div>
+          <div className="mb-4">
+            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          </div>
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">Loading Quiz</h3>
+          <p className="text-gray-600">Preparing your questions...</p>
+        </div>
       </div>
     );
   }
@@ -77,15 +123,35 @@ console.log('error', error);
   // Show the quiz taking interface
   return (
     <MainLayout>  
-    <div className="container mx-auto p-4">
-      <QuizTaking 
+      {
+        currentQuiz ? (
+          <QuizTaking 
           currentQuiz={currentQuiz}
         onQuizComplete={() => {
           // Handle quiz completion
           router.push('/quiz/results');
         }}
       />
-    </div>
-    </MainLayout>
+      ) : (
+        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+          <div className="text-center">
+            <div className="relative mb-6">
+              <div className="absolute inset-0 animate-ping">
+                <BookOpen className="w-12 h-12 text-blue-500 mx-auto" />
+              </div>
+              <div className="relative">
+                <BookOpen className="w-12 h-12 text-blue-500 mx-auto" />
+              </div>
+            </div>
+            <div className="mb-4">
+              <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">Loading Quiz</h3>
+            <p className="text-gray-600">Preparing your questions...</p>
+          </div>
+        </div>
+      )
+      }
+      </MainLayout>
   );
 }

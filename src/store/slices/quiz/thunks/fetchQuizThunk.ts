@@ -7,12 +7,6 @@ export const fetchQuiz = createAsyncThunk(
     'quiz/fetchQuiz',
     async (quizId: string, { getState, rejectWithValue }) => {
       try {
-        // Check if we already have this quiz in the state
-        const state = getState() as { quiz: { currentQuiz: any } };
-        if (state.quiz.currentQuiz?.id === quizId) {
-          return state.quiz.currentQuiz;
-        }
-        
         const quiz = await quizService.getQuizById(quizId);
         return quiz;
       } catch (error) {

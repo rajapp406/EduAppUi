@@ -36,7 +36,7 @@ export interface QuizAttempt {
 export interface QuizState {
   // General quiz state
   availableQuizzes: Quiz[];
-  quiz: Quiz;
+  quiz: Quiz | null;
   currentQuiz: Quiz | null;
   currentQuestionIndex: number;
   userAnswers: QuizAnswer[];
