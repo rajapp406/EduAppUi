@@ -7,7 +7,7 @@ import { RootState } from '@/store/store';
 import type { AppDispatch } from '@/store/store';
 import { BookOpen } from 'lucide-react';
 import QuizTaking from '@/components/Quiz/QuizTaking';
-import { fetchQuiz, startQuizAttempt } from '@/store/slices/quiz/thunks';
+import { fetchQuizById, startQuizAttempt } from '@/store/slices/quiz/thunks';
 import { MainLayout } from '@/components/Layout/MainLayout';
 
 export default function QuizPage() {
@@ -46,7 +46,7 @@ export default function QuizPage() {
       
       const fetchData = async () => {
         try {
-          const fetchResult = await dispatch(fetchQuiz(id) as any);
+          const fetchResult = await dispatch(fetchQuizById(id) as any);
           console.log('Fetch quiz result:', fetchResult);
           
           if (fetchResult.type.endsWith('/fulfilled')) {
@@ -127,9 +127,9 @@ export default function QuizPage() {
         currentQuiz ? (
           <QuizTaking 
           currentQuiz={currentQuiz}
-        onQuizComplete={() => {
+          onQuizComplete={(quizAttemptId: string) => {
           // Handle quiz completion
-          router.push('/quiz/results');
+          router.push(`/quiz/results/${quizAttemptId}`);
         }}
       />
       ) : (

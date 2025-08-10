@@ -5,13 +5,17 @@ interface AnswerOption {
   isCorrect: boolean;
 }
 export interface Question {
-  id: string;
-  questionType: 'multiple-choice' | 'true-false' | 'short-answer';
-  questionText: string;
-  options?: AnswerOption[];
-  explanation?: string;
-  difficulty: 'easy' | 'medium' | 'hard';
-  subject: string;
+  id: string,
+  chapterId: string,
+  subjectId: string,
+  grade: number,
+  board: string,
+  questionType: "MCQ" | "TRUE_FALSE" | "MSTQ",
+  questionText: string,
+  options: AnswerOption[],
+  explanation: string,
+  difficulty: string,
+  createdAt: string
 }
 
 export interface CompletedQuiz {
@@ -23,17 +27,32 @@ export interface CompletedQuiz {
 }
 
 export interface QuizAttempt {
-  id: string;
-  quizId: string;
-  userProfileId: string;
-  startTime: string;
-  endTime: string;
-  totalQuestions: number;
-  correctAnswers: number;
-  score: number;
+    id: string,
+    quizId: string,
+    userId: string,
+    startedAt: string,
+    completedAt: string,
+    timeSpent: number,
+    score: number,
+    totalQuestions: number,
+    correctAnswers: number,
+    totalPoints: number,
+    maxPoints: number,
+    status: string,
+    answers?: QuizAnswer[],
+    quiz?: Quiz
+}
+
+export interface QuizUserStatistics {
+  totalAttempts: number,
+  completedAttempts: number,
+  completionRate: number,
+  averageScore: number,
+  averageTimeSpent: number
 }
 
 export interface QuizState {
+  quizUserStatistics: QuizUserStatistics;
   // General quiz state
   availableQuizzes: Quiz[];
   quiz: Quiz | null;
@@ -46,6 +65,7 @@ export interface QuizState {
   isLoading: boolean;
   completedQuizzes: CompletedQuiz[];
   currentQuizAttempt: QuizAttempt | null;
+  currentQuizAttemptComplete: QuizAttempt;
   // Loading states
   isLoadingQuizzes: boolean;
   
@@ -64,9 +84,13 @@ export interface QuizState {
 }
 
 export interface QuizAnswer {
-  quizAttemptId: string,
-  questionId: string,
-  selectedOption: string | number,
-  textAnswer: string,
-  timeSpent: number
+    quizAttemptId?: string,
+    questionId?: string,
+    selectedOption?: string | number,
+    textAnswer?: string,
+    isCorrect?: boolean,
+    pointsEarned?: number,
+    timeSpent?: number,
+    answeredAt?: string,
+    question?: Question
 }

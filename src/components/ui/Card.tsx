@@ -14,7 +14,6 @@ const Card: React.FC<CardProps> = ({
   hover = false,
   onClick,
 }) => {
-  console.log(children, 'childrenchildrenchildren')
   return (
     <motion.div
       className={`bg-white rounded-xl shadow-sm border border-gray-100 ${hover ? 'cursor-pointer' : ''} ${className}`}

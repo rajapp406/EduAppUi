@@ -9,6 +9,7 @@ export const API_CONFIG = {
     QUIZ_ATTEMPT: '/quiz-attempts',
     QUIZZES: '/quizzes',
   },
+  USER_ID: '0016e789-b406-46a5-bf04-0cca30fea38e',
   TIMEOUT: 30000, // 30 seconds
 };
 

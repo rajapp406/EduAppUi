@@ -3,8 +3,8 @@ import { quizService } from "@/services/quizService";
 import { QuizState } from "@/models/quiz";
 import { ActionReducerMapBuilder } from "@reduxjs/toolkit";
 
-export const fetchQuiz = createAsyncThunk(
-    'quiz/fetchQuiz',
+export const fetchQuizById = createAsyncThunk(
+    'quiz/fetchQuizById',
     async (quizId: string, { getState, rejectWithValue }) => {
       try {
         const quiz = await quizService.getQuizById(quizId);
@@ -18,15 +18,15 @@ export const fetchQuiz = createAsyncThunk(
 
 export const extraReducersFetchQuiz = (builder: ActionReducerMapBuilder<QuizState>) => {
     builder
-      .addCase(fetchQuiz.pending, (state) => {
+      .addCase(fetchQuizById.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(fetchQuiz.fulfilled, (state, action) => {
+      .addCase(fetchQuizById.fulfilled, (state, action) => {
         state.isLoading = false;
         state.currentQuiz = action.payload;
       })
-      .addCase(fetchQuiz.rejected, (state, action) => {
+      .addCase(fetchQuizById.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       });

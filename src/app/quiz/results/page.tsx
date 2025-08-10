@@ -10,14 +10,11 @@ import { CheckCircle2, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { MainLayout } from '@/components/Layout/MainLayout';
 
-export default function QuizResultsPage() {
+export default function QuizResultsPage_() {
   const router = useRouter();
   const { completedQuizzes, currentQuiz, userAnswers } = useSelector((state: RootState) => state.quiz);
   
-  // Get the most recent quiz result
-  console.log(completedQuizzes, currentQuiz, userAnswers)
   const latestResult = completedQuizzes[completedQuizzes.length - 1];
-  // Redirect if there are no completed quizzes
   useEffect(() => {
     if (!latestResult) {
       router.push('/quiz');
@@ -61,8 +58,8 @@ export default function QuizResultsPage() {
           <h2 className="text-xl font-semibold mb-4">Review Your Answers</h2>
           <div className="space-y-6">
             {currentQuiz.questions.map((question, index) => {
-              const isCorrect = userAnswers[index] === question.options.find((option) => option.isCorrect)?.text;
-              const userAnswer = userAnswers[index] ?? 'No answer provided';
+              const isCorrect = userAnswers[index].selectedOption === question.options.find((option) => option.isCorrect)?.text;
+              const userAnswer = userAnswers[index].selectedOption ?? 'No answer provided';
               
               return (
                 <div 

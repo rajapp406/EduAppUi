@@ -15,6 +15,13 @@ export const initialState: QuizState = {
     completedQuizzes: [],
     quizzesBySubject: {},
     quizzesByChapter: {},
+    quizUserStatistics: {
+      totalAttempts: 0,
+      completedAttempts: 0,
+      completionRate: 0,
+      averageScore: 0,
+      averageTimeSpent: 0
+    },
     pagination: {
       page: 1,
       limit: 10,

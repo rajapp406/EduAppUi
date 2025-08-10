@@ -1,8 +1,7 @@
 import { API_CONFIG, buildApiUrl } from "@/config/api";
 import { Quiz, QuizType } from "@/models/api";
 import { ApiResponse, PaginatedResponse } from "@/models/api";
-import { QuizAnswer, QuizAttempt } from "@/models/quiz";
-import { submitQuizAttempt } from "@/store/slices/quiz/thunks/submitQuizThunk";
+import { QuizAnswer, QuizAttempt, QuizUserStatistics } from "@/models/quiz";
 
 interface GetQuizzesParams {
   subjectId?: string;
@@ -17,7 +16,16 @@ interface GetQuizzesParams {
 export const quizService = {
   getQuizById: async (id: string): Promise<Quiz> => {
     try {
-      const response = await fetch(`${buildApiUrl(API_CONFIG.ENDPOINTS.QUIZZES)}/${id}`);
+      // Include query parameters to ensure we get questions with options
+      const queryParams = new URLSearchParams({
+        includeQuestions: 'true',
+        includeOptions: 'true'
+      });
+      
+      const url = `${buildApiUrl(API_CONFIG.ENDPOINTS.QUIZZES)}/${id}?${queryParams.toString()}`;
+      console.log('Fetching quiz from:', url);
+      
+      const response = await fetch(url);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || 'Failed to fetch quiz');
@@ -33,7 +41,9 @@ export const quizService = {
         id,
         response: apiResponse,
         hasData: !!apiResponse.data,
-        quizId: apiResponse.data?.id
+        quizId: apiResponse.data?.id,
+        questionsCount: apiResponse.data?.questions?.length,
+        firstQuestionOptions: apiResponse.data?.questions?.[0]?.options?.length
       });
       
       return apiResponse.data;
@@ -84,7 +94,87 @@ export const quizService = {
       throw error;
     }
   },
+  getQuizAttemptById: async (id: string): Promise<QuizAttempt> => {
+    try {
+      // Enhanced query parameters to include all necessary data
+      const queryParams = new URLSearchParams({
+        includeAnswers: 'true',
+        includeQuiz: 'true',
+        includeQuestions: 'true',
+        includeOptions: 'true',
+        includeRelations: 'true'
+      });
+      
+      const url = `${buildApiUrl(API_CONFIG.ENDPOINTS.QUIZ_ATTEMPT)}/${id}?${queryParams.toString()}`;
+      console.log('Fetching quiz attempt from:', url);
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to fetch quiz attempt');
+      }
+      
+      const apiResponse: ApiResponse<QuizAttempt> = await response.json();
+      console.log('Quiz attempt API response:', apiResponse);
+      
+      if (!apiResponse.success || !apiResponse.data) {
+        throw new Error(apiResponse.message || 'Failed to load quiz attempt');
+      }
+      
+      return apiResponse.data;
+    } catch (error) {
+      console.error('Error fetching quiz attempt:', error);
+      throw error;
+    }
+  },
 
+  getQuizAttemptsByQuizId: async (quizId: string, includeQuizData = false): Promise<QuizAttempt[]> => {
+    try {
+      const queryParams = new URLSearchParams({
+        quizId: quizId
+      });
+      
+      if (includeQuizData) {
+        queryParams.append('includeAnswers', 'true');
+        queryParams.append('includeQuiz', 'true');
+        queryParams.append('includeQuestions', 'true');
+        queryParams.append('includeOptions', 'true');
+      }
+      
+      const url = `${buildApiUrl(API_CONFIG.ENDPOINTS.QUIZ_ATTEMPT)}?${queryParams.toString()}`;
+      console.log('Fetching quiz attempts by quiz ID from:', url);
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to fetch quiz attempts');
+      }
+      
+      const apiResponse: ApiResponse<QuizAttempt[]> = await response.json();
+      console.log('Quiz attempts by quiz ID API response:', apiResponse);
+      
+      if (!apiResponse.success || !apiResponse.data) {
+        throw new Error(apiResponse.message || 'Failed to load quiz attempts');
+      }
+      
+      return apiResponse.data;
+    } catch (error) {
+      console.error('Error fetching quiz attempts by quiz ID:', error);
+      throw error;
+    }
+  },
   getQuizzesBySubject: async (subjectId: string, page = 1, limit = 10): Promise<PaginatedResponse<Quiz>> => {
     return quizService.getQuizzes({ subjectId, page, limit });
   },
@@ -98,16 +188,16 @@ export const quizService = {
     const response = await quizService.getQuizzes({});
     return response.data || [];
   },
-  getQuizAttempt: async (id: string): Promise<QuizAttempt> => {
+  getQuizAttempt: async (id: string, userId: string): Promise<QuizAttempt> => {
     try {
-      const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.QUIZ_ATTEMPT), {
+      const response = await fetch(`${buildApiUrl(API_CONFIG.ENDPOINTS.QUIZ_ATTEMPT)}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           quizId: id,
-          userProfileId: '8d7afc71-eae0-4c66-9288-6e294ab878bb',
+          userId,
         }), 
       });
       if (!response.ok) {
@@ -181,6 +271,39 @@ export const quizService = {
       return apiResponse.data;
     } catch (error) {
       console.error('Error fetching quiz:', error);
+      throw error;
+    }
+  },
+  quizStatistics: async (userId: string): Promise<QuizUserStatistics> => { 
+    try {
+      const url = `${buildApiUrl(API_CONFIG.ENDPOINTS.QUIZ_ATTEMPT)}/statistics?userId=${userId}`;
+      console.log('Fetching quiz statistics from URL:', url);
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json', 
+        },
+      });
+      
+      console.log('Quiz statistics response status:', response.status);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Quiz statistics API error:', errorData);
+        throw new Error(errorData.message || 'Failed to get quiz statistics');
+      }
+      
+      const apiResponse: ApiResponse<QuizUserStatistics> = await response.json();
+      console.log('Quiz statistics API response:', apiResponse);
+      
+      if (!apiResponse.success || !apiResponse.data) {
+        throw new Error(apiResponse.message || 'Failed to get quiz statistics');
+      }
+      
+      return apiResponse.data;
+    } catch (error) {
+      console.error('Error fetching quiz statistics:', error);
       throw error;
     }
   },

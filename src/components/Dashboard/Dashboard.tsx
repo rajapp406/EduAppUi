@@ -9,6 +9,7 @@ import Badge from '../ui/Badge';
 import ProgressBar from '../ui/ProgressBar';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { QuizStatistics } from './QuizStatistics';
 
 
 const Dashboard: React.FC = () => {
@@ -28,7 +29,7 @@ console.log('dashboard...0000');
     { id: '2', title: 'Physics Fundamentals', difficulty: 'medium', creditCost: 8 },
     { id: '3', title: 'Chemistry Basics', difficulty: 'easy', creditCost: 5 },
   ];
-
+console.log('dashboard...0000', completedQuizzes);
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
@@ -64,6 +65,16 @@ console.log('dashboard...0000');
           color="yellow"
         />
       </div>
+
+      {/* Quiz Statistics Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="mb-8"
+      >
+        <QuizStatistics />
+      </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Recent Lessons */}

@@ -13,17 +13,19 @@ import { Loader2 } from 'lucide-react';
 import { Quiz } from '@/models/api';
 import { submitQuizAttempt, completeQuizAttempt } from '@/store/slices/quiz/thunks';
 import { QuizAnswer } from '@/models/quiz';
+import { useRouter } from 'next/navigation';
 
 interface QuizTakingProps {
-  onQuizComplete: () => void;
+  onQuizComplete: (quizAttemptId: string) => void;
   currentQuiz: Quiz | null
 }
 
 const QuizTaking: React.FC<QuizTakingProps> = ({ currentQuiz, onQuizComplete }) => {
   const dispatch = useAppDispatch();
-  const { currentQuizAttempt, currentQuestionIndex, userAnswers, timeRemaining, isLoading, error } = useSelector(
+  const { currentQuizAttempt, completedQuizzes, currentQuestionIndex, userAnswers, timeRemaining, isLoading, error } = useSelector(
     (state: RootState) => state.quiz
   );
+  const router = useRouter();
   const [showResults, setShowResults] = useState(false);
 
   // Show loading state
@@ -72,12 +74,17 @@ console.log(currentQuizAttempt, 'currentQuizAttemptcurrentQuizAttempt')
     dispatch(answerQuestion({ questionIndex: currentQuestionIndex, answer: quizAnswer }));
   };
 
+  const showQuestionAnswers = () => {
+    setShowResults(true);
+    console.log("showQuestionAnswers", showResults)
+    onQuizComplete(currentQuizAttempt?.id || '')
+  };
   const handleSubmit = async () => {
     console.log("handleSubmit", currentQuizAttempt)
-    await dispatch(submitQuizAttempt(userAnswers as any));
-    await dispatch(completeQuizAttempt());
-    // onQuizComplete();
-
+    
+    // Set showResults BEFORE dispatching to prevent loading screen from overriding
+    setShowResults(true);
+    
     // Calculate score and award bonus credits
     const correctAnswers = userAnswers.filter((answer, index) =>
       answer.selectedOption === currentQuiz.questions[index].options.find((option) => option.isCorrect)?.text
@@ -87,8 +94,10 @@ console.log(currentQuizAttempt, 'currentQuizAttemptcurrentQuizAttempt')
     if (score >= 80) {
       dispatch(earnCredits({ amount: 5, description: 'High score bonus' }));
     }
-
-    setShowResults(true);
+    
+    // Dispatch the thunk after setting showResults
+    await dispatch(submitQuizAttempt(userAnswers as any));
+    await dispatch(completeQuizAttempt());
   };
 
   if (showResults) {
@@ -127,9 +136,13 @@ console.log(currentQuizAttempt, 'currentQuizAttemptcurrentQuizAttempt')
                 </p>
               )}
             </div>
-
             <div className="space-y-3">
-              <Button variant="primary" onClick={onQuizComplete}>
+              <Button variant="primary" onClick={showQuestionAnswers}>
+                Show Results
+              </Button>
+            </div>
+            <div className="space-y-3">
+              <Button variant="primary" onClick={ () => router.push('/dashboard')}>
                 Back to Dashboard
               </Button>
             </div>

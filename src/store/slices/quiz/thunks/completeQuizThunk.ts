@@ -8,6 +8,7 @@ export const completeQuizAttempt = createAsyncThunk(
     async (_, { rejectWithValue, getState }) => {
       try {
         const state = getState() as any;
+        console.log(state.quiz, 'state.completeQuizAttempt')
         const quizAttempt = await quizService.quizComplete(state.quiz.currentQuizAttempt?.id || '');
         return quizAttempt;
       } catch (error) {
@@ -24,7 +25,7 @@ export const completeQuizAttempt = createAsyncThunk(
       })
       .addCase(completeQuizAttempt.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.currentQuiz = action.payload;
+        (state as any).currentQuizAttemptComplete = action.payload;
       })
       .addCase(completeQuizAttempt.rejected, (state, action) => {
         state.isLoading = false;
