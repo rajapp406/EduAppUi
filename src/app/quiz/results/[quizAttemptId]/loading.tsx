@@ -1,10 +1,10 @@
-import StartQuizLoading from './StartQuizLoading';
+import { QuizResultsLoading } from './QuizResultsLoading';
 import { MainLayout } from '@/components/Layout/MainLayout';
 
 export default function Loading() {
   return (
     <MainLayout>
-      <StartQuizLoading />
+      <QuizResultsLoading />
     </MainLayout>
   );
 }

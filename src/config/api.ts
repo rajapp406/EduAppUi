@@ -1,6 +1,6 @@
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3100',
+  BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3900',
   ENDPOINTS: {
     ONBOARDING: '/user-profiles/onboarding',
     SCHOOLS_SEARCH: '/schools',

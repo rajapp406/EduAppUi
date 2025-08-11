@@ -3,7 +3,7 @@ import { store } from '../store/store';
 import { logout } from '../store/slices/authSlice';
 
 // Use NEXT_PUBLIC_ prefix for client-side environment variables in Next.js
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3100';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3900';
 
 class ApiService {
   private instance: AxiosInstance;
@@ -15,7 +15,7 @@ class ApiService {
 
   constructor() {
     this.instance = axios.create({
-      baseURL: 'API_BASE_URL',
+      baseURL: 'http://localhost:3900',
       headers: {
         'Content-Type': 'application/json',
       },

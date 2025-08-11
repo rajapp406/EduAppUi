@@ -25,10 +25,20 @@ export const quizService = {
       const url = `${buildApiUrl(API_CONFIG.ENDPOINTS.QUIZZES)}/${id}?${queryParams.toString()}`;
       console.log('Fetching quiz from:', url);
       
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        // Add caching for quiz data (can be cached longer as it's less likely to change)
+        next: { 
+          revalidate: 300, // Cache for 5 minutes
+          tags: [`quiz-${id}`] 
+        }
+      });
+      
       if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('Quiz not found');
+        }
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to fetch quiz');
+        throw new Error(errorData.message || `Failed to fetch quiz (${response.status})`);
       }
       
       const apiResponse: ApiResponse<Quiz> = await response.json();
@@ -113,11 +123,19 @@ export const quizService = {
         headers: {
           'Content-Type': 'application/json',
         },
+        // Add caching for server-side requests
+        next: { 
+          revalidate: 0, // Don't cache user-specific data
+          tags: [`quiz-attempt-${id}`] 
+        }
       });
       
       if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('Quiz attempt not found');
+        }
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to fetch quiz attempt');
+        throw new Error(errorData.message || `Failed to fetch quiz attempt (${response.status})`);
       }
       
       const apiResponse: ApiResponse<QuizAttempt> = await response.json();

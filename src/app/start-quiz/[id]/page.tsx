@@ -1,157 +1,85 @@
-'use client';
+import { Suspense } from "react";
+import { notFound } from "next/navigation";
+import { Metadata } from "next";
+import { Loader2 } from "lucide-react";
+import { quizService } from "@/services/quizService";
+import { StartQuizClient } from "./StartQuizClient";
+import { MainLayout } from "@/components/Layout/MainLayout";
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '@/store/store';
-import type { AppDispatch } from '@/store/store';
-import { BookOpen } from 'lucide-react';
-import QuizTaking from '@/components/Quiz/QuizTaking';
-import { fetchQuizById, startQuizAttempt } from '@/store/slices/quiz/thunks';
-import { MainLayout } from '@/components/Layout/MainLayout';
+// Enable ISR for quiz pages
+export const dynamic = "force-dynamic"; // Quiz attempts are user-specific
+export const revalidate = 300; // Revalidate every 5 minutes
 
-export default function QuizPage() {
-  const params = useParams();
-  const router = useRouter();
-  const dispatch = useDispatch<AppDispatch>();
-  const { id } = params as { id: string };
-  console.log('id', id);
-  const { currentQuiz, isLoading, error } = useSelector((state: RootState) => state.quiz);
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
-  const [isClient, setIsClient] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
+interface PageProps {
+  params: {
+    id: string;
+  };
+}
 
-  console.log('Quiz Page State:', { 
-    id, 
-    isLoading, 
-    error, 
-    hasCurrentQuiz: !!currentQuiz,
-    currentQuizId: currentQuiz?.id,
-    questionsCount: currentQuiz?.questions?.length 
-  });
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+// Generate metadata for SEO
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  try {
+    const quiz = await quizService.getQuizById(params.id);
 
-  // Reset initialization when ID changes
-  useEffect(() => {
-    setIsInitialized(false);
-  }, [id]);
-
-  useEffect(() => {
-    // Fetch quiz data when component mounts and we have an ID
-    if (id && isClient && !isInitialized) {
-      console.log('Fetching quiz data for ID:', id);
-      setIsInitialized(true);
-      
-      const fetchData = async () => {
-        try {
-          const fetchResult = await dispatch(fetchQuizById(id) as any);
-          console.log('Fetch quiz result:', fetchResult);
-          
-          if (fetchResult.type.endsWith('/fulfilled')) {
-            const attemptResult = await dispatch(startQuizAttempt(id) as any);
-            console.log('Start quiz attempt result:', attemptResult);
-          }
-        } catch (error) {
-          console.error('Error fetching quiz data:', error);
-        }
-      };
-      
-      fetchData();
-    }
-  }, [dispatch, id, isClient, isInitialized]);
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (isClient && !isAuthenticated) {
-      router.push(`/login?callbackUrl=/start-quiz/${id}`);
-    }
-  }, [isClient, isAuthenticated, id, router]);
-
-  // Show loading state during initial render
-  if (!isClient || isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        <div className="text-center">
-          <div className="relative mb-6">
-            <div className="absolute inset-0 animate-ping">
-              <BookOpen className="w-12 h-12 text-blue-500 mx-auto" />
-            </div>
-            <div className="relative">
-              <BookOpen className="w-12 h-12 text-blue-500 mx-auto" />
-            </div>
-          </div>
-          <div className="mb-4">
-            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          </div>
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">Loading Quiz</h3>
-          <p className="text-gray-600">Preparing your questions...</p>
-        </div>
-      </div>
-    );
+    return {
+      title: `${quiz.title} | EduApp`,
+      description:
+        quiz.description ||
+        `Take the ${quiz.title} quiz and test your knowledge.`,
+      keywords: `quiz, ${quiz.primarySubject?.name}, education, learning`,
+      openGraph: {
+        title: quiz.title,
+        description: quiz.description || `Take the ${quiz.title} quiz`,
+        type: "website",
+      },
+    };
+  } catch {
+    return {
+      title: "Quiz | EduApp",
+      description: "Take a quiz and test your knowledge",
+    };
   }
+}
 
-  // Show error state if quiz couldn't be loaded
-  if (error) {
-    return (
-      <div className="container mx-auto p-8">
-        <div className="bg-red-50 border-l-4 border-red-400 p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-red-700">
-                {error}
-              </p>
-            </div>
-          </div>
-        </div>
-        <button
-          onClick={() => router.push('/quiz')}
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        >
-          Back to Quiz List
-        </button>
-      </div>
-    );
+// Server component for data fetching
+async function StartQuizServer({ quizId }: { quizId: string }) {
+  try {
+    // Fetch quiz data on the server
+    const quiz = await quizService.getQuizById(quizId);
+
+    if (!quiz || !quiz.questions || quiz.questions.length === 0) {
+      notFound();
+    }
+
+    return <StartQuizClient quiz={quiz} />;
+  } catch (error) {
+    console.error("Error fetching quiz:", error);
+    notFound();
   }
+}
 
-  // Show the quiz taking interface
+// Simple loading component
+function QuizLoading() {
   return (
-    <MainLayout>  
-      {
-        currentQuiz ? (
-          <QuizTaking 
-          currentQuiz={currentQuiz}
-          onQuizComplete={(quizAttemptId: string) => {
-          // Handle quiz completion
-          router.push(`/quiz/results/${quizAttemptId}`);
-        }}
-      />
-      ) : (
-        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-          <div className="text-center">
-            <div className="relative mb-6">
-              <div className="absolute inset-0 animate-ping">
-                <BookOpen className="w-12 h-12 text-blue-500 mx-auto" />
-              </div>
-              <div className="relative">
-                <BookOpen className="w-12 h-12 text-blue-500 mx-auto" />
-              </div>
-            </div>
-            <div className="mb-4">
-              <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-            </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">Loading Quiz</h3>
-            <p className="text-gray-600">Preparing your questions...</p>
-          </div>
-        </div>
-      )
-      }
-      </MainLayout>
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-500" />
+        <h2 className="text-xl font-semibold mb-2">Loading Quiz</h2>
+        <p className="text-gray-600">Preparing your questions...</p>
+      </div>
+    </div>
+  );
+}
+
+// Main page component
+export default function StartQuizPage({ params }: PageProps) {
+  return (
+    <MainLayout>
+      <Suspense fallback={<QuizLoading />}>
+        <StartQuizServer quizId={params.id} />
+      </Suspense>
+    </MainLayout>
   );
 }

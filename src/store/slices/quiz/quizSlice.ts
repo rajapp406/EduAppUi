@@ -18,6 +18,10 @@ const quizSlice = createSlice({
       state.error = null;
       state.timeRemaining = 0;
     },
+    setCurrentQuiz: (state, action: PayloadAction<Quiz>) => {
+      state.currentQuiz = action.payload;
+      state.quiz = action.payload;
+    },
     loadQuizzes: (state, action: PayloadAction<Quiz[]>) => {
       console.log("loadQuizzes", action, state);
         state.availableQuizzes = action.payload;
@@ -93,6 +97,7 @@ export const {
   submitQuiz, 
   updateTimer,
   resetQuizState,
+  setCurrentQuiz,
   loadQuizzes,
 } = quizSlice.actions;
 export default quizSlice.reducer;

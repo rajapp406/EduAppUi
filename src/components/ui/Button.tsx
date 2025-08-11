@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import { motion, MotionProps } from 'framer-motion';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
@@ -36,6 +38,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({
   whileTap = { scale: 0.98 },
   ...props
 }, ref) => {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const baseClasses = 'font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
   
   const variantClasses = {
@@ -52,7 +60,33 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({
   };
 
   const isDisabled = disabled || loading;
+  const buttonClasses = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${
+    isDisabled ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'
+  } ${className}`;
 
+  // Render regular button on server-side and during hydration
+  if (!isClient) {
+    return (
+      <button
+        ref={ref}
+        type={props.type || 'button'}
+        disabled={isDisabled}
+        className={buttonClasses}
+        {...props}
+      >
+        {loading ? (
+          <div className="flex items-center justify-center">
+            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2 animate-spin" />
+            {children}
+          </div>
+        ) : (
+          children
+        )}
+      </button>
+    );
+  }
+
+  // Render motion button on client-side
   return (
     <motion.button
       ref={ref}
@@ -60,9 +94,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({
       disabled={isDisabled}
       whileHover={!isDisabled ? whileHover : {}}
       whileTap={!isDisabled ? whileTap : {}}
-      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${
-        isDisabled ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'
-      } ${className}`}
+      className={buttonClasses}
       {...props}
     >
       {loading ? (

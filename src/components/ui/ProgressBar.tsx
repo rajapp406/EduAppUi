@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
 interface ProgressBarProps {
@@ -14,6 +16,12 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   size = 'md',
   showLabel = false,
 }) => {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const colorClasses = {
     blue: 'bg-blue-600',
     green: 'bg-green-600',
@@ -27,15 +35,24 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
     lg: 'h-4',
   };
 
+  const progressBarClasses = `${colorClasses[color]} h-full rounded-full transition-all duration-500 ease-out`;
+
   return (
     <div className="w-full">
       <div className={`bg-gray-200 rounded-full overflow-hidden ${sizeClasses[size]}`}>
-        <motion.div
-          className={`${colorClasses[color]} h-full rounded-full`}
-          initial={{ width: 0 }}
-          animate={{ width: `${progress}%` }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-        />
+        {!isClient ? (
+          <div
+            className={progressBarClasses}
+            style={{ width: `${progress}%` }}
+          />
+        ) : (
+          <motion.div
+            className={progressBarClasses}
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
+          />
+        )}
       </div>
       {showLabel && (
         <div className="mt-1 text-sm text-gray-600 text-right">
