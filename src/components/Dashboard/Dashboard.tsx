@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../store/store';
-import { BookOpen, Brain, Award, TrendingUp, Play, Clock } from 'lucide-react';
+import { RootState, useAppDispatch } from '../../store/store';
+import { BookOpen, Brain, Award, TrendingUp, Play, Clock, Loader2 } from 'lucide-react';
 import StatsCard from './StatsCard';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
@@ -10,26 +10,49 @@ import ProgressBar from '../ui/ProgressBar';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { QuizStatistics } from './QuizStatistics';
+import { loadQuizzesAsync } from '../../store/slices/quiz/thunks';
+import { Quiz } from '../../models/api';
 
 
 const Dashboard: React.FC = () => {
-  const { totalCredits, usedCredits } = useSelector((state: RootState) => state.credits);
-  const { completedQuizzes } = useSelector((state: RootState) => state.quiz);
+  const dispatch = useAppDispatch();
+  const { completedQuizzes, availableQuizzes, isLoadingQuizzes } = useSelector((state: RootState) => state.quiz);
   const { lessons } = useSelector((state: RootState) => state.lessons);
   const router = useRouter();
-  const remainingCredits = totalCredits - usedCredits;
+  const [featuredQuizzes, setFeaturedQuizzes] = useState<Quiz[]>([]);
+  
   const completedLessons = lessons.filter(l => l.completed).length;
   const averageScore = completedQuizzes.length > 0 
     ? Math.round(completedQuizzes.reduce((sum, quiz) => sum + quiz.score, 0) / completedQuizzes.length)
     : 0;
-console.log('dashboard...0000');
+
+  // Fetch quizzes on component mount
+  useEffect(() => {
+    dispatch(loadQuizzesAsync({ page: 1, limit: 6 }));
+  }, [dispatch]);
+
+  // Set featured quizzes when available quizzes are loaded
+  useEffect(() => {
+    if (availableQuizzes && availableQuizzes.length > 0) {
+      // Get first 3 quizzes for the dashboard widget
+      setFeaturedQuizzes(availableQuizzes.slice(0, 3));
+    }
+  }, [availableQuizzes]);
+
   const recentLessons = lessons.slice(0, 3);
-  const recentQuizzes = [
-    { id: '1', title: 'Basic Mathematics', difficulty: 'easy', creditCost: 5 },
-    { id: '2', title: 'Physics Fundamentals', difficulty: 'medium', creditCost: 8 },
-    { id: '3', title: 'Chemistry Basics', difficulty: 'easy', creditCost: 5 },
-  ];
-console.log('dashboard...0000', completedQuizzes);
+
+  const getDifficultyColor = (difficulty?: string) => {
+    switch (difficulty?.toLowerCase()) {
+      case 'easy': return 'success';
+      case 'medium': return 'warning';
+      case 'hard': return 'danger';
+      default: return 'secondary';
+    }
+  };
+
+  const handleQuizClick = (quizId: string) => {
+    router.push(`/start-quiz/${quizId}`);
+  };
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
@@ -40,11 +63,11 @@ console.log('dashboard...0000', completedQuizzes);
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatsCard
-          title="Available Credits"
-          value={remainingCredits}
+          title="Available Quizzes"
+          value={availableQuizzes?.length || 0}
           icon={BookOpen}
           color="blue"
-          trend={{ value: 5, label: 'from last week' }}
+          trend={{ value: 3, label: 'new this week' }}
         />
         <StatsCard
           title="Quizzes Completed"
@@ -120,7 +143,7 @@ console.log('dashboard...0000', completedQuizzes);
                     </div>
                   </div>
                   <div className="text-sm text-blue-600 font-medium">
-                    {lesson.creditCost} credits
+                    Free
                   </div>
                 </div>
               ))}
@@ -145,33 +168,84 @@ console.log('dashboard...0000', completedQuizzes);
                 View All
               </Button>
             </div>
-            <div className="space-y-4">
-              {recentQuizzes.map((quiz) => (
-                <div key={quiz.id} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                  <div className="flex-shrink-0">
-                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                      <Brain className="h-6 w-6 text-green-600" />
+            
+            {isLoadingQuizzes ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+                <span className="ml-2 text-gray-600">Loading quizzes...</span>
+              </div>
+            ) : featuredQuizzes.length > 0 ? (
+              <div className="space-y-4">
+                {featuredQuizzes.map((quiz) => (
+                  <div 
+                    key={quiz.id} 
+                    className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
+                    onClick={() => handleQuizClick(quiz.id)}
+                  >
+                    <div className="flex-shrink-0">
+                      <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                        <Brain className="h-6 w-6 text-green-600" />
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-medium text-gray-900 truncate">
-                      {quiz.title}
-                    </h4>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <Badge
-                        variant={quiz.difficulty === 'easy' ? 'success' : quiz.difficulty === 'medium' ? 'warning' : 'danger'}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-medium text-gray-900 truncate group-hover:text-green-700 transition-colors">
+                        {quiz.title}
+                      </h4>
+                      <div className="flex items-center space-x-2 mt-1">
+                        <Badge
+                          variant={getDifficultyColor(quiz.averageDifficulty)}
+                          size="sm"
+                        >
+                          {quiz.averageDifficulty || 'Mixed'}
+                        </Badge>
+                        {quiz.questionCount && (
+                          <span className="text-xs text-gray-500">
+                            {quiz.questionCount} questions
+                          </span>
+                        )}
+                        {quiz.timeLimit && (
+                          <div className="flex items-center text-xs text-gray-500">
+                            <Clock className="h-3 w-3 mr-1" />
+                            {quiz.timeLimit}min
+                          </div>
+                        )}
+                      </div>
+                      {quiz.primarySubject && (
+                        <div className="mt-1">
+                          <span className="text-xs text-blue-600 font-medium">
+                            {quiz.primarySubject.name} • Grade {quiz.primarySubject.grade}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center">
+                      <Button
+                        variant="outline"
                         size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleQuizClick(quiz.id);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
                       >
-                        {quiz.difficulty}
-                      </Badge>
+                        Start Quiz
+                      </Button>
                     </div>
                   </div>
-                  <div className="text-sm text-green-600 font-medium">
-                    {quiz.creditCost} credits
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Brain className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500 mb-4">No quizzes available at the moment</p>
+                <Button
+                  variant="outline"
+                  onClick={() => router.push('/quiz')}
+                >
+                  Browse All Quizzes
+                </Button>
+              </div>
+            )}
           </Card>
         </motion.div>
       </div>
@@ -192,15 +266,15 @@ console.log('dashboard...0000', completedQuizzes);
               onClick={() => router.push('/quiz')}
             >
               <Brain className="h-4 w-4" />
-              <span>Take Quiz</span>
+              <span>Browse Quizzes</span>
             </Button>
             <Button
               variant="secondary"
               className="flex items-center justify-center space-x-2"
-              onClick={() =>    router.push('/subjects')}
+              onClick={() => router.push('/subjects')}
             >
-              <Play className="h-4 w-4" />
-              <span>Subjects</span>
+              <BookOpen className="h-4 w-4" />
+              <span>Study Subjects</span>
             </Button>
             <Button
               variant="outline"
@@ -213,7 +287,7 @@ console.log('dashboard...0000', completedQuizzes);
             <Button
               variant="ghost"
               className="flex items-center justify-center space-x-2"
-              onClick={() => router.push('/progress')}
+              onClick={() => router.push('/dashboard')}
             >
               <TrendingUp className="h-4 w-4" />
               <span>View Progress</span>
