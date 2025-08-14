@@ -37,10 +37,10 @@ export default function Subjects() {
 
     if (isAuthLoading) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-gray-50">
+            <div className="flex items-center justify-center min-h-screen bg-background">
                 <div className="text-center">
-                    <Loader2 className="animate-spin h-12 w-12 text-blue-500 mx-auto mb-4" />
-                    <p className="text-gray-600">Loading...</p>
+                    <Loader2 className="animate-spin h-12 w-12 text-primary mx-auto mb-4" />
+                    <p className="text-muted-foreground">Loading...</p>
                 </div>
             </div>
         );
@@ -52,26 +52,26 @@ export default function Subjects() {
 
     return (
         <MainLayout>
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+            <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
                 <div className="container mx-auto px-4 py-8">
                     {/* Header Section */}
                     <div className="flex items-center mb-8">
                         <Button 
                             variant="outline" 
                             onClick={handleBack}
-                            className="mr-4 flex items-center gap-2 hover:bg-gray-50"
+                            className="mr-4 flex items-center gap-2 hover:bg-accent"
                         >
                             <ArrowLeft className="w-4 h-4" />
                             Back
                         </Button>
                         
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-100 rounded-lg">
-                                <BookOpen className="w-6 h-6 text-blue-600" />
+                            <div className="p-2 bg-primary/10 rounded-lg">
+                                <BookOpen className="w-6 h-6 text-primary" />
                             </div>
                             <div>
-                                <h1 className="text-3xl font-bold text-gray-800">Subjects</h1>
-                                <p className="text-gray-600">Choose a subject to start learning</p>
+                                <h1 className="text-3xl font-bold text-foreground">Subjects</h1>
+                                <p className="text-muted-foreground">Choose a subject to start learning</p>
                             </div>
                         </div>
                     </div>
@@ -80,26 +80,26 @@ export default function Subjects() {
                     {isLoading ? (
                         <div className="flex justify-center items-center py-20">
                             <div className="text-center">
-                                <Loader2 className="animate-spin h-12 w-12 text-blue-500 mx-auto mb-4" />
-                                <p className="text-gray-600">Loading subjects...</p>
+                                <Loader2 className="animate-spin h-12 w-12 text-primary mx-auto mb-4" />
+                                <p className="text-muted-foreground">Loading subjects...</p>
                             </div>
                         </div>
                     ) : error ? (
                         <div className="text-center py-20">
-                            <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
-                                <div className="text-red-600 mb-2">
+                            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6 max-w-md mx-auto">
+                                <div className="text-destructive mb-2">
                                     <svg className="w-8 h-8 mx-auto" fill="currentColor" viewBox="0 0 20 20">
                                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                                     </svg>
                                 </div>
-                                <h3 className="text-lg font-semibold text-red-800 mb-2">Error Loading Subjects</h3>
-                                <p className="text-red-600">{error}</p>
+                                <h3 className="text-lg font-semibold text-destructive mb-2">Error Loading Subjects</h3>
+                                <p className="text-destructive">{error}</p>
                             </div>
                         </div>
                     ) : availableSubjects && availableSubjects.length > 0 ? (
                         <>
                             <div className="mb-6">
-                                <p className="text-gray-600">
+                                <p className="text-muted-foreground">
                                     {availableSubjects.length} subject{availableSubjects.length !== 1 ? 's' : ''} available
                                 </p>
                             </div>
@@ -119,12 +119,12 @@ export default function Subjects() {
                         </>
                     ) : (
                         <div className="text-center py-20">
-                            <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 max-w-md mx-auto">
-                                <div className="text-gray-400 mb-4">
+                            <div className="bg-muted/50 border border-border rounded-lg p-8 max-w-md mx-auto">
+                                <div className="text-muted mb-4">
                                     <BookOpen className="w-16 h-16 mx-auto" />
                                 </div>
-                                <h3 className="text-lg font-semibold text-gray-800 mb-2">No Subjects Available</h3>
-                                <p className="text-gray-600">There are no subjects available at the moment. Please check back later.</p>
+                                <h3 className="text-lg font-semibold text-foreground mb-2">No Subjects Available</h3>
+                                <p className="text-muted-foreground">There are no subjects available at the moment. Please check back later.</p>
                             </div>
                         </div>
                     )}

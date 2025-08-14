@@ -56,8 +56,8 @@ const Dashboard: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-900">Welcome back!</h2>
-        <p className="text-gray-600 mt-1">Continue your learning journey</p>
+        <h2 className="text-3xl font-bold text-foreground">Welcome back!</h2>
+        <p className="text-muted-foreground mt-1">Continue your learning journey</p>
       </div>
 
       {/* Stats Grid */}
@@ -108,7 +108,7 @@ const Dashboard: React.FC = () => {
         >
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Continue Learning</h3>
+              <h3 className="text-lg font-semibold text-foreground">Continue Learning</h3>
               <Button
                 variant="ghost"
                 size="sm"
@@ -119,21 +119,21 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="space-y-4">
               {recentLessons.map((lesson) => (
-                <div key={lesson.id} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <div key={lesson.id} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-accent transition-colors">
                   <div className="flex-shrink-0">
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <Play className="h-6 w-6 text-blue-600" />
+                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <Play className="h-6 w-6 text-primary" />
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-medium text-gray-900 truncate">
+                    <h4 className="text-sm font-medium text-foreground truncate">
                       {lesson.title}
                     </h4>
                     <div className="flex items-center space-x-2 mt-1">
                       <Badge variant="secondary" size="sm">
                         {lesson.subject}
                       </Badge>
-                      <div className="flex items-center text-xs text-gray-500">
+                      <div className="flex items-center text-xs text-muted-foreground">
                         <Clock className="h-3 w-3 mr-1" />
                         {Math.round(lesson.duration / 60)}min
                       </div>
@@ -142,7 +142,7 @@ const Dashboard: React.FC = () => {
                       <ProgressBar progress={lesson.progress} size="sm" />
                     </div>
                   </div>
-                  <div className="text-sm text-blue-600 font-medium">
+                  <div className="text-sm text-primary font-medium">
                     Free
                   </div>
                 </div>
@@ -159,7 +159,7 @@ const Dashboard: React.FC = () => {
         >
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Test Your Knowledge</h3>
+              <h3 className="text-lg font-semibold text-foreground">Test Your Knowledge</h3>
               <Button
                 variant="ghost"
                 size="sm"
@@ -171,24 +171,24 @@ const Dashboard: React.FC = () => {
             
             {isLoadingQuizzes ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
-                <span className="ml-2 text-gray-600">Loading quizzes...</span>
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                <span className="ml-2 text-muted-foreground">Loading quizzes...</span>
               </div>
             ) : featuredQuizzes.length > 0 ? (
               <div className="space-y-4">
                 {featuredQuizzes.map((quiz) => (
                   <div 
                     key={quiz.id} 
-                    className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
+                    className="flex items-center space-x-4 p-3 rounded-lg hover:bg-accent transition-colors cursor-pointer group"
                     onClick={() => handleQuizClick(quiz.id)}
                   >
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors">
-                        <Brain className="h-6 w-6 text-green-600" />
+                      <div className="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center group-hover:bg-success/20 transition-colors">
+                        <Brain className="h-6 w-6 text-success" />
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-medium text-gray-900 truncate group-hover:text-green-700 transition-colors">
+                      <h4 className="text-sm font-medium text-foreground truncate group-hover:text-success transition-colors">
                         {quiz.title}
                       </h4>
                       <div className="flex items-center space-x-2 mt-1">
@@ -199,12 +199,12 @@ const Dashboard: React.FC = () => {
                           {quiz.averageDifficulty || 'Mixed'}
                         </Badge>
                         {quiz.questionCount && (
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-muted-foreground">
                             {quiz.questionCount} questions
                           </span>
                         )}
                         {quiz.timeLimit && (
-                          <div className="flex items-center text-xs text-gray-500">
+                          <div className="flex items-center text-xs text-muted-foreground">
                             <Clock className="h-3 w-3 mr-1" />
                             {quiz.timeLimit}min
                           </div>
@@ -212,7 +212,7 @@ const Dashboard: React.FC = () => {
                       </div>
                       {quiz.primarySubject && (
                         <div className="mt-1">
-                          <span className="text-xs text-blue-600 font-medium">
+                          <span className="text-xs text-primary font-medium">
                             {quiz.primarySubject.name} • Grade {quiz.primarySubject.grade}
                           </span>
                         </div>
@@ -236,8 +236,8 @@ const Dashboard: React.FC = () => {
               </div>
             ) : (
               <div className="text-center py-8">
-                <Brain className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500 mb-4">No quizzes available at the moment</p>
+                <Brain className="h-12 w-12 text-muted mx-auto mb-4" />
+                <p className="text-muted-foreground mb-4">No quizzes available at the moment</p>
                 <Button
                   variant="outline"
                   onClick={() => router.push('/quiz')}
@@ -258,7 +258,7 @@ const Dashboard: React.FC = () => {
         className="mt-8"
       >
         <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-4">Quick Actions</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Button
               variant="primary"

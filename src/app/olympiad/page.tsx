@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
-import { RootState, useAppDispatch } from "@/store/store";
+import { RootState } from "@/store/store";
 import { MainLayout } from "@/components/Layout/MainLayout";
 import {
   Trophy,
@@ -166,31 +166,23 @@ export default function OlympiadPage() {
     router.push(`/olympiad/${categoryId}/practice`);
   };
 
-  const getDaysUntilExam = (examDate: string) => {
-    if (!isClient) return 30; // Default value for SSR
-
-    const today = new Date();
-    const exam = new Date(examDate);
-    const diffTime = exam.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return Math.max(1, diffDays); // Ensure at least 1 day
-  };
-
   // Show loading state until client-side hydration is complete
   if (!isClient) {
     return (
       <MainLayout>
-        <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+        <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
           <div className="container mx-auto px-4 py-8">
             <div className="flex items-center justify-center min-h-[400px]">
               <div className="text-center">
                 <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Trophy className="w-8 h-8 text-white" />
                 </div>
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                <h1 className="text-2xl font-bold text-foreground mb-2">
                   Loading Olympiad
                 </h1>
-                <p className="text-gray-600">Preparing your challenges...</p>
+                <p className="text-muted-foreground">
+                  Preparing your challenges...
+                </p>
               </div>
             </div>
           </div>
@@ -214,10 +206,10 @@ export default function OlympiadPage() {
                 <Trophy className="w-8 h-8 text-white" />
               </div>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
               Olympiad Preparation
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
               Excel in academic competitions with our comprehensive preparation
               platform. Practice, compete, and achieve excellence in various
               olympiad categories.
@@ -226,35 +218,37 @@ export default function OlympiadPage() {
             {/* Quick Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
               <div className="text-center">
-                <div className="text-2xl font-bold text-indigo-600">
+                <div className="text-2xl font-bold text-primary">
                   {userProgress.totalAttempts}
                 </div>
-                <div className="text-sm text-gray-600">Practice Tests</div>
+                <div className="text-sm text-muted-foreground">
+                  Practice Tests
+                </div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-2xl font-bold text-success">
                   {userProgress.averageScore}%
                 </div>
-                <div className="text-sm text-gray-600">Avg Score</div>
+                <div className="text-sm text-muted-foreground">Avg Score</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600">
+                <div className="text-2xl font-bold text-primary">
                   #{userProgress.rank}
                 </div>
-                <div className="text-sm text-gray-600">Global Rank</div>
+                <div className="text-sm text-muted-foreground">Global Rank</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-orange-600">
+                <div className="text-2xl font-bold text-warning">
                   {userProgress.badges.length}
                 </div>
-                <div className="text-sm text-gray-600">Badges</div>
+                <div className="text-sm text-muted-foreground">Badges</div>
               </div>
             </div>
           </div>
 
           {/* Olympiad Categories */}
           <div className="mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">
+            <h2 className="text-3xl font-bold text-foreground text-center mb-8">
               Choose Your Challenge
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -274,20 +268,20 @@ export default function OlympiadPage() {
                       </div>
 
                       <div className="flex-1">
-                        <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors">
+                        <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
                           {category.name}
                         </h3>
-                        <p className="text-gray-600 mb-4">
+                        <p className="text-muted-foreground mb-4">
                           {category.description}
                         </p>
 
                         {/* Category Details */}
                         <div className="grid grid-cols-2 gap-4 mb-4">
-                          <div className="flex items-center text-sm text-gray-500">
+                          <div className="flex items-center text-sm text-muted-foreground">
                             <Clock className="w-4 h-4 mr-2" />
                             {category.duration}
                           </div>
-                          <div className="flex items-center text-sm text-gray-500">
+                          <div className="flex items-center text-sm text-muted-foreground">
                             <Users className="w-4 h-4 mr-2" />
                             {category.participants}
                           </div>
@@ -342,7 +336,7 @@ export default function OlympiadPage() {
 
           {/* Resources Section */}
           <div className="mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">
+            <h2 className="text-3xl font-bold text-foreground text-center mb-8">
               Preparation Resources
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -350,10 +344,10 @@ export default function OlympiadPage() {
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <BookOpen className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                <h3 className="text-xl font-bold text-foreground mb-2">
                   Study Materials
                 </h3>
-                <p className="text-gray-600 mb-4">
+                <p className="text-muted-foreground mb-4">
                   Comprehensive study guides, practice problems, and reference
                   materials for all olympiad categories.
                 </p>
@@ -370,10 +364,10 @@ export default function OlympiadPage() {
                 <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Target className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                <h3 className="text-xl font-bold text-foreground mb-2">
                   Practice Tests
                 </h3>
-                <p className="text-gray-600 mb-4">
+                <p className="text-muted-foreground mb-4">
                   Timed practice tests that simulate real olympiad conditions
                   with detailed explanations.
                 </p>
@@ -390,10 +384,10 @@ export default function OlympiadPage() {
                 <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <TrendingUp className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                <h3 className="text-xl font-bold text-foreground mb-2">
                   Performance Analytics
                 </h3>
-                <p className="text-gray-600 mb-4">
+                <p className="text-muted-foreground mb-4">
                   Track your progress, identify weak areas, and get personalized
                   recommendations.
                 </p>
@@ -410,17 +404,17 @@ export default function OlympiadPage() {
 
           {/* Achievement Badges */}
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">
+            <h2 className="text-3xl font-bold text-foreground mb-8">
               Your Achievements
             </h2>
             <div className="flex flex-wrap justify-center gap-4 mb-8">
               {userProgress.badges.map((badge, index) => (
                 <div
                   key={index}
-                  className="flex items-center space-x-2 bg-gradient-to-r from-yellow-100 to-orange-100 px-4 py-2 rounded-full border border-yellow-200"
+                  className="flex items-center space-x-2 bg-gradient-to-r from-warning/10 to-warning/20 px-4 py-2 rounded-full border border-warning/30"
                 >
-                  <Star className="w-5 h-5 text-yellow-600" />
-                  <span className="text-yellow-800 font-medium">{badge}</span>
+                  <Star className="w-5 h-5 text-warning" />
+                  <span className="text-warning font-medium">{badge}</span>
                 </div>
               ))}
             </div>

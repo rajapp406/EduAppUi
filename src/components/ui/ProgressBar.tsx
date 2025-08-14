@@ -23,10 +23,10 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   }, []);
 
   const colorClasses = {
-    blue: 'bg-blue-600',
-    green: 'bg-green-600',
-    yellow: 'bg-yellow-600',
-    red: 'bg-red-600',
+    blue: 'bg-primary',
+    green: 'bg-success',
+    yellow: 'bg-warning',
+    red: 'bg-destructive',
   };
 
   const sizeClasses = {
@@ -39,7 +39,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
 
   return (
     <div className="w-full">
-      <div className={`bg-gray-200 rounded-full overflow-hidden ${sizeClasses[size]}`}>
+      <div className={`bg-muted rounded-full overflow-hidden ${sizeClasses[size]}`}>
         {!isClient ? (
           <div
             className={progressBarClasses}
@@ -55,7 +55,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
         )}
       </div>
       {showLabel && (
-        <div className="mt-1 text-sm text-gray-600 text-right">
+        <div className="mt-1 text-sm text-muted-foreground text-right">
           {Math.round(progress)}%
         </div>
       )}

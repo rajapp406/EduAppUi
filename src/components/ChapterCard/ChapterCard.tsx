@@ -43,11 +43,11 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
   const getStatusInfo = () => {
     switch (status) {
       case "completed":
-        return { icon: "✓", text: "Completed", color: "text-green-600" };
+        return { icon: "✓", text: "Completed", color: "text-success" };
       case "in-progress":
-        return { icon: "⏳", text: "In Progress", color: "text-yellow-600" };
+        return { icon: "⏳", text: "In Progress", color: "text-warning" };
       default:
-        return { icon: "★", text: "New", color: "text-blue-600" };
+        return { icon: "★", text: "New", color: "text-primary" };
     }
   };
 
@@ -56,12 +56,12 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
   return (
     <div
       className={`
-        relative bg-white rounded-2xl border-2 transition-all duration-300 cursor-pointer
-        hover:shadow-xl hover:-translate-y-1 group overflow-hidden
+        relative bg-card rounded-2xl border-2 transition-all duration-300 cursor-pointer
+        hover:shadow-theme-xl hover:-translate-y-1 group overflow-hidden
         ${
           isHovered
-            ? `${subjectColors.border} shadow-lg`
-            : "border-gray-200 hover:border-gray-300"
+            ? `border-primary shadow-theme-lg`
+            : "border-border hover:border-primary/50"
         }
       `}
       onClick={() => onClick(chapter.id)}
@@ -69,7 +69,7 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
       onMouseLeave={() => onHover(null)}
     >
       {/* Decorative Elements */}
-      <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-gray-100 to-transparent opacity-30 rounded-bl-full"></div>
+      <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-muted to-transparent opacity-30 rounded-bl-full"></div>
       <div
         className={`absolute top-4 right-4 w-8 h-8 rounded-full bg-gradient-to-br ${subjectColors.gradient} flex items-center justify-center text-white text-sm font-bold`}
       >
@@ -78,7 +78,7 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
 
       {/* Status Badge */}
       {status === "completed" && (
-        <div className="absolute top-4 left-4 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+        <div className="absolute top-4 left-4 w-6 h-6 bg-success rounded-full flex items-center justify-center">
           <svg
             className="w-4 h-4 text-white"
             fill="currentColor"
@@ -115,24 +115,24 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
 
         {/* Chapter Info */}
         <div className="mb-4">
-          <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-gray-700 transition-colors">
+          <h3 className="text-xl font-bold text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
             {chapter.title}
           </h3>
-          <p className="text-gray-600 text-sm mb-3">
+          <p className="text-muted-foreground text-sm mb-3">
             Chapter {chapter.chapterNumber}
           </p>
 
           {/* Progress Bar */}
           <div className="mb-3">
             <div className="flex justify-between items-center mb-1">
-              <span className="text-xs font-medium text-gray-600">
+              <span className="text-xs font-medium text-muted-foreground">
                 Progress
               </span>
-              <span className="text-xs font-semibold text-gray-800">
+              <span className="text-xs font-semibold text-foreground">
                 {progress}%
               </span>
             </div>
-            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div className="h-2 bg-muted rounded-full overflow-hidden">
               <div
                 className={`h-full bg-gradient-to-r ${subjectColors.gradient} transition-all duration-500 relative`}
                 style={{ width: `${progress}%` }}
@@ -143,7 +143,7 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
           </div>
 
           {/* Chapter Stats */}
-          <div className="flex items-center gap-4 text-xs text-gray-500">
+          <div className="flex items-center gap-4 text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
               <Clock className="w-3 h-3" />
               <span>{estimatedTime}</span>
@@ -171,7 +171,7 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
               font-semibold py-3 px-4 rounded-xl shadow-md
               hover:shadow-lg hover:-translate-y-0.5 
               transition-all duration-200 text-sm
-              focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50
+              focus:outline-none focus:ring-2 focus:ring-ring focus:ring-opacity-50
               flex items-center justify-center gap-2
               relative overflow-hidden
             `}
@@ -187,11 +187,11 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
               onQuizClick?.(chapter.id);
             }}
             className="
-              px-4 py-3 border-2 border-gray-300 text-gray-700 
-              font-semibold rounded-xl hover:border-gray-400 
-              hover:bg-gray-50 hover:-translate-y-0.5
+              px-4 py-3 border-2 border-border text-foreground 
+              font-semibold rounded-xl hover:border-primary/50 
+              hover:bg-accent hover:-translate-y-0.5
               transition-all duration-200 text-sm
-              focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50
+              focus:outline-none focus:ring-2 focus:ring-ring focus:ring-opacity-50
               flex items-center justify-center
             "
             title="Take Quiz"
@@ -204,12 +204,12 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
       {/* Hover Arrow */}
       <div
         className={`
-        absolute bottom-4 right-4 w-8 h-8 rounded-full bg-white shadow-md
+        absolute bottom-4 right-4 w-8 h-8 rounded-full bg-card shadow-theme-md
         flex items-center justify-center transition-all duration-300
         ${isHovered ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2"}
       `}
       >
-        <ChevronRight className="w-4 h-4 text-gray-600" />
+        <ChevronRight className="w-4 h-4 text-muted-foreground" />
       </div>
 
       {/* Shimmer Effect on Hover */}

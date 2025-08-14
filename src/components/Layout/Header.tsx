@@ -3,10 +3,13 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
 import { RootState } from '../../store/store';
-import { GraduationCap, User, LogOut, Coins } from 'lucide-react';
+import { GraduationCap, Coins } from 'lucide-react';
 import Button from '../ui/Button';
 import LoginModal from '../Auth/LoginModal';
 import Link from 'next/link';
+import { UserMenu } from '../ui/UserMenu';
+import { MobileMenu } from '../ui/MobileMenu';
+import { SimpleThemeToggle } from '../ui/ThemeToggle';
 
 const Header: React.FC = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -24,64 +27,103 @@ const Header: React.FC = () => {
 
   return (
     <>
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <header className="bg-card border-b border-border sticky top-0 z-50 shadow-theme-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-2">
-              <GraduationCap className="h-8 w-8 text-blue-600" />
-              <h1 className="text-xl font-bold text-gray-900">
-                <Link href="/dashboard">EduPlatform</Link>
+              <GraduationCap className="h-8 w-8 text-primary" />
+              <h1 className="text-xl font-bold text-foreground">
+                <Link href="/dashboard" className="hover:text-primary transition-colors">
+                  EduApp
+                </Link>
               </h1>
             </div>
 
-            {isAuthenticated && user ? (
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2 bg-blue-50 px-3 py-1.5 rounded-lg">
-                  <Coins className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm font-medium text-blue-900">
-                    {remainingCredits} credits
-                  </span>
-                </div>
-                
-                <div className="flex items-center space-x-3">
-                  {user.avatar ? (
-                    <img
-                      src={user.avatar}
-                      alt={user.name}
-                      className="w-8 h-8 rounded-full border-2 border-gray-200"
-                    />
-                  ) : (
-                    <User className="h-5 w-5 text-gray-600" />
-                  )}
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium text-gray-900">{user.name}</span>
-                    {user.provider && (
-                      <span className="text-xs text-gray-500 capitalize">
-                        via {user.provider}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleLogout}
-                  className="flex items-center space-x-1"
+            {/* Navigation Links - Desktop Only */}
+            {isAuthenticated && (
+              <nav className="hidden md:flex items-center space-x-6">
+                <Link
+                  href="/dashboard"
+                  className="text-muted-foreground hover:text-foreground px-3 py-2 rounded-md text-sm font-medium transition-colors relative group"
                 >
-                  <LogOut className="h-4 w-4" />
-                  <span>Logout</span>
-                </Button>
-              </div>
-            ) : (
-              <Button 
-                variant="primary" 
-                onClick={() => setShowLoginModal(true)}
-                className="ml-4"
-              >
-                Sign In
-              </Button>
+                  Dashboard
+                  <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
+                </Link>
+                <Link
+                  href="/subjects"
+                  className="text-muted-foreground hover:text-foreground px-3 py-2 rounded-md text-sm font-medium transition-colors relative group"
+                >
+                  Subjects
+                  <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
+                </Link>
+                <Link
+                  href="/quiz"
+                  className="text-muted-foreground hover:text-foreground px-3 py-2 rounded-md text-sm font-medium transition-colors relative group"
+                >
+                  Quiz
+                  <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
+                </Link>
+                <Link
+                  href="/olympiad"
+                  className="text-muted-foreground hover:text-foreground px-3 py-2 rounded-md text-sm font-medium transition-colors relative group"
+                >
+                  Olympiad
+                  <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
+                </Link>
+              </nav>
             )}
+
+            {/* Right Side Menu */}
+            <div className="flex items-center space-x-4">
+              {isAuthenticated && user ? (
+                <>
+                  {/* Credits Display - Desktop Only */}
+                  <div className="hidden sm:flex items-center space-x-2 bg-primary/10 px-3 py-1.5 rounded-lg">
+                    <Coins className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium text-primary">
+                      {remainingCredits} credits
+                    </span>
+                  </div>
+
+                  {/* Desktop Theme Toggle */}
+                  <div className="hidden md:block">
+                    <SimpleThemeToggle />
+                  </div>
+                  
+                  {/* Desktop User Menu */}
+                  <div className="hidden md:block">
+                    <UserMenu onLogout={handleLogout} />
+                  </div>
+                  
+                  {/* Mobile Menu */}
+                  <MobileMenu onLogout={handleLogout} />
+                </>
+              ) : (
+                <>
+                  {/* Desktop Auth Buttons */}
+                  <div className="hidden md:flex items-center space-x-2">
+                    <SimpleThemeToggle />
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setShowLoginModal(true)}
+                    >
+                      Login
+                    </Button>
+                    <Button 
+                      variant="primary" 
+                      size="sm"
+                      onClick={() => setShowLoginModal(true)}
+                    >
+                      Sign Up
+                    </Button>
+                  </div>
+                  
+                  {/* Mobile Menu for non-authenticated users */}
+                  <MobileMenu onLogout={handleLogout} />
+                </>
+              )}
+            </div>
           </div>
         </div>
       </header>

@@ -55,18 +55,18 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({
   return (
     <div
       className={`
-      relative bg-white rounded-2xl border-2 ${borderColor} 
-      shadow-sm hover:shadow-xl transition-all duration-300 
+      relative bg-card rounded-2xl border-2 border-border hover:border-primary/50
+      shadow-theme-sm hover:shadow-theme-xl transition-all duration-300 
       hover:-translate-y-1 cursor-pointer overflow-hidden
-      ${isSelected ? "ring-2 ring-blue-400 ring-opacity-50" : ""}
+      ${isSelected ? "ring-2 ring-primary ring-opacity-50" : ""}
     `}
     >
       {/* Decorative background pattern */}
-      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-gray-100 to-transparent opacity-30 rounded-bl-full"></div>
+      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-muted to-transparent opacity-30 rounded-bl-full"></div>
 
       {/* Selection indicator */}
       {isSelected && (
-        <div className="absolute top-3 right-3 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+        <div className="absolute top-3 right-3 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
           <svg
             className="w-3 h-3 text-white"
             fill="currentColor"
@@ -105,7 +105,7 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({
           )}
 
           {/* Grade badge */}
-          <div className="bg-white/90 backdrop-blur-sm text-gray-700 text-xs font-semibold px-3 py-1 rounded-full border border-gray-200 shadow-sm">
+          <div className="bg-secondary/90 backdrop-blur-sm text-secondary-foreground text-xs font-semibold px-3 py-1 rounded-full border border-border shadow-theme-sm">
             Grade {subject.grade}
           </div>
         </div>
@@ -113,12 +113,12 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({
 
       {/* Card Content */}
       <div className="px-6 pb-4 flex flex-col gap-3">
-        <h3 className="text-xl font-bold text-gray-800 text-center leading-tight">
+        <h3 className="text-xl font-bold text-foreground text-center leading-tight">
           {subject.name}
         </h3>
 
         {/* Board info with icon */}
-        <div className="flex items-center justify-center gap-2 text-gray-600">
+        <div className="flex items-center justify-center gap-2 text-muted-foreground">
           <svg
             className="w-4 h-4 opacity-70"
             viewBox="0 0 20 20"
@@ -139,14 +139,14 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({
         {showProgress && (
           <div className="mt-2">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-xs font-medium text-gray-600">
+              <span className="text-xs font-medium text-muted-foreground">
                 Progress
               </span>
-              <span className="text-xs font-semibold text-gray-800">
+              <span className="text-xs font-semibold text-foreground">
                 {progress}%
               </span>
             </div>
-            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div className="h-2 bg-muted rounded-full overflow-hidden">
               <div
                 className={`h-full bg-gradient-to-r ${subjectGradient} transition-all duration-500 ease-out relative`}
                 style={{ width: `${progress}%` }}
@@ -170,7 +170,7 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({
             font-semibold py-3 px-4 rounded-xl shadow-md
             hover:shadow-lg hover:-translate-y-0.5 
             transition-all duration-200 text-sm
-            focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50
+            focus:outline-none focus:ring-2 focus:ring-ring focus:ring-opacity-50
           `}
         >
           Start Learning
@@ -182,11 +182,11 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({
             onQuiz(subject.id);
           }}
           className="
-            px-4 py-3 border-2 border-gray-300 text-gray-700 
-            font-semibold rounded-xl hover:border-gray-400 
-            hover:bg-gray-50 hover:-translate-y-0.5
+            px-4 py-3 border-2 border-border text-foreground 
+            font-semibold rounded-xl hover:border-primary/50 
+            hover:bg-accent hover:-translate-y-0.5
             transition-all duration-200 text-sm
-            focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50
+            focus:outline-none focus:ring-2 focus:ring-ring focus:ring-opacity-50
           "
         >
           Quiz

@@ -46,7 +46,7 @@ export function CompetitionsSection({ competitions }: CompetitionsSectionProps) 
 
   return (
     <div className="mb-12">
-      <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">
+      <h2 className="text-3xl font-bold text-foreground text-center mb-8">
         Upcoming Competitions
       </h2>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -67,35 +67,35 @@ export function CompetitionsSection({ competitions }: CompetitionsSectionProps) 
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-lg font-bold text-green-600">
+                <div className="text-lg font-bold text-success">
                   {competition.prize}
                 </div>
-                <div className="text-xs text-gray-500">Prize Pool</div>
+                <div className="text-xs text-muted-foreground">Prize Pool</div>
               </div>
             </div>
 
-            <h3 className="text-lg font-bold text-gray-900 mb-2">
+            <h3 className="text-lg font-bold text-foreground mb-2">
               {competition.name}
             </h3>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-muted-foreground mb-4">
               {competition.category}
             </p>
 
             <div className="space-y-2 mb-4">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Exam Date:</span>
+                <span className="text-muted-foreground">Exam Date:</span>
                 <span className="font-medium">
                   {formatDate(competition.date)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Registration:</span>
+                <span className="text-muted-foreground">Registration:</span>
                 <span className="font-medium">
                   {formatDate(competition.registrationDeadline)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Participants:</span>
+                <span className="text-muted-foreground">Participants:</span>
                 <span className="font-medium">
                   {competition.participants.toLocaleString()}
                 </span>
@@ -105,7 +105,7 @@ export function CompetitionsSection({ competitions }: CompetitionsSectionProps) 
             <div className="mb-4">
               <div className="flex justify-between text-sm mb-1">
                 <span>Days Remaining</span>
-                <span className="font-bold text-orange-600">
+                <span className="font-bold text-warning">
                   {getDaysUntilExam(competition.date)} days
                 </span>
               </div>
